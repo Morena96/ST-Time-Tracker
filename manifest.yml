@@ -7,7 +7,7 @@ modules:
       render: native
       title: ST Tracker
       description: A hello world issue context.
-      label: Hello World!
+      label: Start / Stop
   function:
     - key: resolver
       handler: index.handler
@@ -18,3 +18,6 @@ app:
   runtime:
     name: nodejs22.x
   id: ari:cloud:ecosystem::app/426029e2-8460-46d5-9a3d-fdf228ed7f15
+permissions:
+  scopes:
+    - read:jira-work
