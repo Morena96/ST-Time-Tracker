@@ -26,6 +26,11 @@ resolver.define('getApiKey', async ({ payload }) => {
   }
 });
 
+resolver.define('resetApiKey', async () => {
+  await storage.delete('apiKey');
+  return { success: true };
+});
+
 resolver.define('startTimer', async (req) => {
   const timestamp = Date.now();
   await storage.set('timerStart', timestamp);
