@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ForgeReconciler from '@forge/react';
 import { invoke } from '@forge/bridge';
 import LoginPage from './login';
-import TimerPage from './timer';
+import TrackerPage from './tracker';
 
 const App = () => {
   const [apiKey, setApiKey] = useState(null);
@@ -19,7 +19,7 @@ const App = () => {
   if (apiKey === null) {
     return <LoginPage setApiKey={setApiKey} />;
   } else {
-    return <TimerPage setApiKey={setApiKey} />;
+    return <TrackerPage setApiKey={setApiKey} />;
   }
 };
 
