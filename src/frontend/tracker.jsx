@@ -1,9 +1,10 @@
 import React from 'react';
-import { Box, Inline, Button, Link, Form, useForm,xcss, Stack, Text } from '@forge/react';
+import { Box, Inline, Button, Link, Form, useForm, xcss, Stack, Text, Tabs, TabList, Tab, TabPanel } from '@forge/react';
 import { invoke } from '@forge/bridge';
+import StartTimer from './start_timer';
+import ActiveTimer from './active_timer';
 
 const containerStyles = xcss({
-  border: '1px solid #ccc',
   backgroundColor: 'elevation.surface.raised',
   boxShadow: 'elevation.shadow.raised',
   padding: 'space.200',
@@ -20,19 +21,38 @@ const TrackerPage = ({ setApiKey }) => {
     });
   };
 
+  let homePage = StartTimer();
+
+
+  if (true) {
+    homePage = ActiveTimer();
+  }
+
   return (
     <>
-      <Box xcss={containerStyles}>
+      <Inline>
+        <Box padding='space.100'></Box>
+        <Box xcss={containerStyles}>
+          <Stack space="space.100">
+            <Tabs id="default">
+              <TabList>
+                <Tab>Timer</Tab>
+                <Tab>Manual</Tab>
+              </TabList>
+              <TabPanel>
+                {homePage}
+              </TabPanel>
+              <TabPanel>
+                <Box padding="space.300">
+                  This is the content area of the third tab.
+                </Box>
+              </TabPanel>
+            </Tabs>
+          </Stack>
+        </Box>
+        <Box padding='space.100'></Box>
+      </Inline>
 
-        <Stack space="space.100">
-          <Text>
-            Apply Atlassian design tokens and styling through xCSS
-          </Text>
-        
-        </Stack>
-      </Box>
-
-      
       <Box padding='space.100'></Box>
       <Inline>
         <Box padding='space.200'></Box>
@@ -41,7 +61,7 @@ const TrackerPage = ({ setApiKey }) => {
       <Form onSubmit={handleSubmit(onResetApiKey)}>
         <Inline>
           <Box padding='space.200'></Box>
-          <Button type='submit' appearance="primary" onClick={handleSubmit(onResetApiKey)}>   
+          <Button type='submit' appearance="primary" onClick={handleSubmit(onResetApiKey)}>
             Reset API key
           </Button>
         </Inline>

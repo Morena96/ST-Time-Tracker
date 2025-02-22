@@ -1,5 +1,5 @@
 import Resolver from '@forge/resolver';
-import { storage } from '@forge/api';
+import { storage, fetch } from '@forge/api';
 
 const resolver = new Resolver();
 
@@ -24,6 +24,16 @@ resolver.define('getApiKey', async ({ payload }) => {
     console.error('Error in getApiKey:', error);
     throw error;
   }
+});
+
+resolver.define('getUserInfo', async ({ payload }) => {
+  const result = await fetch(`${Constants.baseUrl}/internal/users/info`, {
+    headers: {
+      'Authorization': `Bearer ${payload.apiKey}`
+    }
+  });
+  console.log('getUserInfo result:', result.json());
+  return { success: result.ok };
 });
 
 resolver.define('resetApiKey', async () => {

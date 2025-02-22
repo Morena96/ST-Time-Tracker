@@ -9,9 +9,18 @@ const App = () => {
 
   useEffect(() => {
     const fetchApiKey = async () => {
-       invoke('getApiKey').then(result => {
-        setApiKey(result.apiKey);
-       });
+      invoke('getApiKey').then(result1 => {
+        console.log('getApiKey result:', result1);
+        invoke('getUserInfo', { apiKey: result1.apiKey }).then(result2 => {
+          if (result2.success) {
+            setApiKey(result1.apiKey);
+          }
+          else {
+            setApiKey(null);
+          }
+        });
+
+      });
     };
     fetchApiKey();
   }, []);
