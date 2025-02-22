@@ -8,25 +8,31 @@ const App = () => {
   const [apiKey, setApiKey] = useState(null);
 
   useEffect(() => {
+
+    const checkApiKey = async (apiKey) => {
+      invoke('checkApiKey', { apiKey: apiKey }).then(result2 => {
+        if (result2.success) {
+          setApiKey(apiKey);
+        }
+        else {
+          setApiKey(null);
+        }
+      });
+
+      return apiKey!=null;
+    };
+
     const fetchApiKey = async () => {
       invoke('getApiKey').then(result1 => {
-        console.log('getApiKey result:', result1);
-        invoke('getUserInfo', { apiKey: result1.apiKey }).then(result2 => {
-          if (result2.success) {
-            setApiKey(result1.apiKey);
-          }
-          else {
-            setApiKey(null);
-          }
-        });
-
+        checkApiKey(result1.apiKey);
       });
     };
+
     fetchApiKey();
   }, []);
 
   if (apiKey === null) {
-    return <LoginPage setApiKey={setApiKey} />;
+    return <LoginPage checkApiKey={checkApiKey} />;
   } else {
     return <TrackerPage setApiKey={setApiKey} />;
   }
