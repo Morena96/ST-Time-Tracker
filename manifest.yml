@@ -14,11 +14,17 @@ modules:
 resources:
   - key: main
     path: src/frontend/index.jsx
-app:
-  runtime:
-    name: nodejs22.x
-  id: ari:cloud:ecosystem::app/426029e2-8460-46d5-9a3d-fdf228ed7f15
 permissions:
   scopes:
     - read:jira-work
     - storage:app
+  external:
+    fetch:
+      backend:
+        - 'https://scrumlaunch-teams-dev.herokuapp.com/v2'
+        - 'https://scrumteams.herokuapp.com/v2'
+
+app:
+  runtime:
+    name: nodejs22.x
+  id: ari:cloud:ecosystem::app/426029e2-8460-46d5-9a3d-fdf228ed7f15

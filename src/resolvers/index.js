@@ -3,7 +3,7 @@ import { storage, fetch } from '@forge/api';
 import { checkResponse } from './utils/checkResponse';
 const resolver = new Resolver();
 
-// const baseUrl = 'https://scrumteams.herokuapp.com/v2';;
+// const baseUrl = 'https://scrumteams.herokuapp.com/v2';
 const baseUrl = 'https://scrumlaunch-teams-dev.herokuapp.com/v2';
 
 resolver.define('getText', ({ payload }) => {
@@ -30,6 +30,7 @@ resolver.define('getApiKey', async ({ payload }) => {
 });
 
 resolver.define('checkApiKey', async ({ payload }) => {
+  console.log('checkApiKey called with payload:', payload);
     const result = await fetch(`${baseUrl}/internal/users/info`, {
       method: 'GET',
       headers: {
