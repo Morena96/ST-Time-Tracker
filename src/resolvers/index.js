@@ -3,6 +3,9 @@ import { storage, fetch } from '@forge/api';
 
 const resolver = new Resolver();
 
+// const baseUrl = 'https://scrumteams.herokuapp.com/v2';;
+const baseUrl = 'https://scrumlaunch-teams-dev.herokuapp.com/v2';
+
 resolver.define('getText', ({ payload }) => {
   console.log('getText called with payload:', payload);
   return 'Hello, world!';
@@ -26,14 +29,29 @@ resolver.define('getApiKey', async ({ payload }) => {
   }
 });
 
-resolver.define('getUserInfo', async ({ payload }) => {
-  const result = await fetch(`${Constants.baseUrl}/internal/users/info`, {
-    headers: {
-      'Authorization': `Bearer ${payload.apiKey}`
+resolver.define('checkApiKey', async ({ payload }) => {
+  try {
+    const result = await fetch(`${baseUrl}/internal/users/info`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${payload.apiKey}`
+      }
+    });
+    
+    if (result.ok) {
+      // If API key is valid, store it
+      await storage.set('apiKey', payload.apiKey);
+      return { success: true };
+    } else {
+      // If API key is invalid, ensure it's removed
+      await storage.delete('apiKey');
+      return { success: false };
     }
-  });
-  console.log('getUserInfo result:', result.json());
-  return { success: result.ok };
+  } catch (error) {
+    console.error('Error checking API key:', error);
+    await storage.delete('apiKey');
+    return { success: false };
+  }
 });
 
 resolver.define('resetApiKey', async () => {

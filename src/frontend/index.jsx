@@ -5,36 +5,28 @@ import LoginPage from './login';
 import TrackerPage from './tracker';
 
 const App = () => {
-  const [apiKey, setApiKey] = useState(null);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+
+  const checkApiKey = async (apiKey) => {
+    const result = await invoke('checkApiKey', { 'apiKey': apiKey });
+    setIsLoggedIn(result.success);
+  };
 
   useEffect(() => {
-
-    const checkApiKey = async (apiKey) => {
-      invoke('checkApiKey', { apiKey: apiKey }).then(result2 => {
-        if (result2.success) {
-          setApiKey(apiKey);
-        }
-        else {
-          setApiKey(null);
-        }
-      });
-
-      return apiKey!=null;
-    };
-
     const fetchApiKey = async () => {
-      invoke('getApiKey').then(result1 => {
-        checkApiKey(result1.apiKey);
-      });
+      const result = await invoke('getApiKey');
+      if (result.apiKey) {
+        checkApiKey(result.apiKey);
+      }
     };
 
     fetchApiKey();
   }, []);
 
-  if (apiKey === null) {
-    return <LoginPage checkApiKey={checkApiKey} />;
+  if (isLoggedIn) {
+    return <TrackerPage resetApiKey={resetApiKey} />;
   } else {
-    return <TrackerPage setApiKey={setApiKey} />;
+    return <LoginPage checkApiKey={checkApiKey} />;
   }
 };
 

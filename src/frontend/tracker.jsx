@@ -11,14 +11,11 @@ const containerStyles = xcss({
   borderRadius: 'border.radius',
 });
 
-const TrackerPage = ({ setApiKey }) => {
+const TrackerPage = ({ resetApiKey }) => {
   const { handleSubmit } = useForm();
 
   const onResetApiKey = async (data) => {
-    console.log(data);
-    invoke('resetApiKey').then(result => {
-      setApiKey(null);
-    });
+    resetApiKey();
   };
 
   let homePage = StartTimer();

@@ -1,20 +1,11 @@
 import React from 'react';
 import { Box, Inline, Text, Textfield, Button, Link, Form, useForm } from '@forge/react';
-import { invoke } from '@forge/bridge';
 
 const LoginPage = ({ checkApiKey }) => {
     const { register, handleSubmit } = useForm();
 
     const onSubmitApiKey = async (data) => {
-        console.log(data);
-        checkApiKey(data.apiKey).then(result => {
-            if (result.success) {
-                invoke('storeApiKey', { apiKey: data.apiKey }).then(result => {
-                    setApiKey(data.apiKey);
-                });
-                    }
-        });
-
+        checkApiKey(data.apiKey);
     };
 
     return (
