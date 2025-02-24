@@ -1,6 +1,6 @@
 import Resolver from '@forge/resolver';
 import { storage, fetch } from '@forge/api';
-
+import { checkResponse } from './utils/checkResponse';
 const resolver = new Resolver();
 
 // const baseUrl = 'https://scrumteams.herokuapp.com/v2';;
@@ -30,28 +30,24 @@ resolver.define('getApiKey', async ({ payload }) => {
 });
 
 resolver.define('checkApiKey', async ({ payload }) => {
-  try {
     const result = await fetch(`${baseUrl}/internal/users/info`, {
       method: 'GET',
       headers: {
-        'Authorization': `Bearer ${payload.apiKey}`
+        'Authorization': `Bearer ${payload.apiKey}`,
+        'Content-Type': 'application/json; charset=UTF-8',
       }
     });
     
+    await checkResponse('checkApiKey', result);
+
     if (result.ok) {
-      // If API key is valid, store it
       await storage.set('apiKey', payload.apiKey);
-      return { success: true };
     } else {
-      // If API key is invalid, ensure it's removed
       await storage.delete('apiKey');
-      return { success: false };
     }
-  } catch (error) {
-    console.error('Error checking API key:', error);
-    await storage.delete('apiKey');
-    return { success: false };
-  }
+
+    return { success: result.ok };
+
 });
 
 resolver.define('resetApiKey', async () => {
