@@ -9,6 +9,13 @@ const containerStyles = xcss({
   boxShadow: 'elevation.shadow.raised',
   padding: 'space.200',
   borderRadius: 'border.radius',
+  width:'100%',
+
+});
+
+const newContainer =  xcss({
+  width:'100%',
+
 });
 
 const TrackerPage = ({ resetApiKey }) => {
@@ -21,9 +28,9 @@ const TrackerPage = ({ resetApiKey }) => {
   let homePage = StartTimer();
 
 
-  if (true) {
-    homePage = ActiveTimer();
-  }
+  // if (true) {
+  //   homePage = ActiveTimer();
+  // }
 
   return (
     <>
@@ -33,8 +40,8 @@ const TrackerPage = ({ resetApiKey }) => {
           <Stack space="space.100">
             <Tabs id="default">
               <TabList>
-                <Tab>Timer</Tab>
-                <Tab>Manual</Tab>
+              <Box xcss={newContainer}> <Tab><Inline alignInline='center'> Timer </Inline></Tab></Box>
+               <Box xcss={newContainer}> <Tab> <Inline alignInline='center'> Manual </Inline> </Tab></Box>
               </TabList>
               <TabPanel>
                 {homePage}

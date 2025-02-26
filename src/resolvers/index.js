@@ -6,31 +6,22 @@ const resolver = new Resolver();
 // const baseUrl = 'https://scrumteams.herokuapp.com/v2';
 const baseUrl = 'https://scrumlaunch-teams-dev.herokuapp.com/v2';
 
-resolver.define('getText', ({ payload }) => {
-  console.log('getText called with payload:', payload);
-  return 'Hello, world!';
-});
-
 resolver.define('storeApiKey', async ({ payload }) => {
-  console.log('storeApiKey called with payload:', payload);
   await storage.set('apiKey', payload.apiKey);
   return { success: true };
 });
 
 resolver.define('getApiKey', async ({ payload }) => {
-  console.log('getApiKey function called');
   try {
     const apiKey = await storage.get('apiKey');
-    console.log('Retrieved apiKey:', apiKey);
     return { apiKey };
   } catch (error) {
-    console.error('Error in getApiKey:', error);
     throw error;
   }
 });
 
 resolver.define('checkApiKey', async ({ payload }) => {
-  console.log('checkApiKey called with payload:', payload);
+  try {
     const result = await fetch(`${baseUrl}/internal/users/info`, {
       method: 'GET',
       headers: {
@@ -49,6 +40,10 @@ resolver.define('checkApiKey', async ({ payload }) => {
 
     return { success: result.ok };
 
+  } catch (error) {
+    await storage.delete('apiKey');
+    return { success: false };
+  }
 });
 
 resolver.define('resetApiKey', async () => {

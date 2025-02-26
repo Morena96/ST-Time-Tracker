@@ -7,7 +7,7 @@ const LoginPage = ({ checkApiKey }) => {
     const [value, setValue] = useState('');
 
     const onSubmitApiKey = async (data) => {
-        var result = await checkApiKey(data.apiKey);
+        var result = await checkApiKey(value);
 
         if (!result) 
             setValue('');
