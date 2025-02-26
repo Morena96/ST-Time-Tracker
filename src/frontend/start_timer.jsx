@@ -11,13 +11,13 @@ const StartTimer = () => {
   const { handleSubmit } = useForm();
 
   const onTimerStart = async (data) => {
-    console.log()
+    console.log('timer start');
   };
 
   return (
     <Stack grow='fill' alignInline='center'>
       <Box padding='space.200'></Box>
-      <Heading as="h2">00:00:06</Heading>
+      <Heading as="h2">00:00:00</Heading>
       <Box padding='space.200'></Box>
 
       <Button type='submit' appearance="primary" shouldFitContainer onClick={handleSubmit(onTimerStart)}>

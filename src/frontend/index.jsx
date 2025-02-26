@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import ForgeReconciler, { Box, Spinner, Stack } from '@forge/react';
 import { invoke } from '@forge/bridge';
 import LoginPage from './login';
-import TrackerPage from './tracker';
+import Scaffold from './scaffold';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
@@ -10,7 +10,6 @@ const App = () => {
   const checkApiKey = async (apiKey) => {
     console.log('checkApiKey called with apiKey:', apiKey);
     const result = await invoke('checkApiKey', { 'apiKey': apiKey });
-    console.log('checkApiKey result ayayay1:', result);
     setIsLoggedIn(result.success);
     return result.success;
   };
@@ -35,7 +34,7 @@ const App = () => {
   }, []);
 
   if (isLoggedIn) {
-    return <TrackerPage resetApiKey={resetApiKey} />;
+    return <Scaffold resetApiKey={resetApiKey} />;
   } else if (isLoggedIn === false) {
     return <LoginPage checkApiKey={checkApiKey} />;
   } else {

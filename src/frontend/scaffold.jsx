@@ -1,6 +1,10 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Box, Inline, Button, Link, Form, useForm, xcss, Stack, Tabs, TabList, Tab, TabPanel } from '@forge/react';
 import StartTimer from './start_timer';
+import { invoke } from '@forge/bridge';
+import Tag from '../models/tag';
+import Project from '../models/project';
+import ManualTimer from './manual_timer';
 
 const containerStyles = xcss({
   backgroundColor: 'elevation.surface.raised',
@@ -8,7 +12,6 @@ const containerStyles = xcss({
   padding: 'space.200',
   borderRadius: 'border.radius',
   width: '100%',
-
 });
 
 const newContainer = xcss({
@@ -16,8 +19,29 @@ const newContainer = xcss({
 
 });
 
-const TrackerPage = ({ resetApiKey }) => {
+const Scaffold = ({ resetApiKey }) => {
   const { handleSubmit } = useForm();
+
+  const [projects, setProjects] = useState([]);
+  const tags = Tag.tags;
+
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const result = await invoke('getProjects');
+      if (result.success) {
+        const projectsList = result.projects.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
+        setProjects(projectsList);
+      } else {
+        console.error('Error fetching projects ', result.error);
+      }
+    };
+    fetchProjects();
+  }, []);
+
+
+  const handleProjectChange = (projectId) => {
+    console.log('projectId', projectId);
+  };
 
   const onResetApiKey = async (data) => {
     resetApiKey();
@@ -45,9 +69,7 @@ const TrackerPage = ({ resetApiKey }) => {
                 {homePage}
               </TabPanel>
               <TabPanel>
-                <Box padding="space.300">
-                  This is the content area of the third tab.
-                </Box>
+                <ManualTimer projects={projects} handleProjectChange={handleProjectChange} />
               </TabPanel>
             </Tabs>
           </Stack>
@@ -73,4 +95,4 @@ const TrackerPage = ({ resetApiKey }) => {
   );
 };
 
-export default TrackerPage; 
+export default Scaffold; 
