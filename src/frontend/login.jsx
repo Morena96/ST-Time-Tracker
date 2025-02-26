@@ -24,7 +24,7 @@ const LoginPage = ({ checkApiKey }) => {
             <Inline alignBlock='center'>
                 <Box padding='space.200'></Box>
                 <Textfield {...register('apiKey')} value={value} onChange={(e) => setValue(e.target.value)}></Textfield>
-                <Box padding='space.100'></Box>
+                <Box padding='space.050'></Box>
                 <Button type='submit'>Update</Button>
                 <Box padding='space.200'></Box>
             </Inline>

@@ -1,21 +1,29 @@
 import React from 'react';
-import {Box, Stack,Heading,Inline,xcss} from "@forge/react";
+import { Box, Stack, Heading, xcss,useForm,Button,Inline } from "@forge/react";
 
 
 const containerStyles = xcss({
-
   backgroundColor: 'color.background.discovery',
-  width:"100%",
-  height:"100%",
 });
 
 const StartTimer = () => {
-  return (
-    <Stack alignBlock='center' alignInline='center'>
 
-      <Box xcss={containerStyles}>
-        <Heading as="h2">00:00:01</Heading>
-      </Box>
+  const { handleSubmit } = useForm();
+
+  const onTimerStart = async (data) => {
+    console.log()
+  };
+
+  return (
+    <Stack grow='fill' alignInline='center'>
+      <Box padding='space.200'></Box>
+      <Heading as="h2">00:00:06</Heading>
+      <Box padding='space.200'></Box>
+
+      <Button type='submit' appearance="primary" shouldFitContainer onClick={handleSubmit(onTimerStart)}>
+        START TIMER
+      </Button>
+      <Box padding='space.050'></Box>
     </Stack>
   );
 };

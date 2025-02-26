@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import ForgeReconciler, { Spinner, Stack } from '@forge/react';
+import ForgeReconciler, { Box, Spinner, Stack } from '@forge/react';
 import { invoke } from '@forge/bridge';
 import LoginPage from './login';
 import TrackerPage from './tracker';
@@ -10,7 +10,7 @@ const App = () => {
   const checkApiKey = async (apiKey) => {
     console.log('checkApiKey called with apiKey:', apiKey);
     const result = await invoke('checkApiKey', { 'apiKey': apiKey });
-    console.log('checkApiKey result ayayay:', result);
+    console.log('checkApiKey result ayayay1:', result);
     setIsLoggedIn(result.success);
     return result.success;
   };
@@ -36,10 +36,14 @@ const App = () => {
 
   if (isLoggedIn) {
     return <TrackerPage resetApiKey={resetApiKey} />;
-  } else if (isLoggedIn===false ) {
+  } else if (isLoggedIn === false) {
     return <LoginPage checkApiKey={checkApiKey} />;
   } else {
-    return <Stack alignBlock="center" alignInline="center"> <Spinner size="medium" label="loading" /> </Stack>
+    return <Stack alignInline="center" grow='fill'>
+      <Box padding='space.200'></Box>
+      <Spinner size="medium" label="loading" />
+      <Box padding='space.200'></Box>
+    </Stack>
   }
 };
 
