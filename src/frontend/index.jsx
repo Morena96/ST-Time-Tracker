@@ -19,6 +19,8 @@ const App = () => {
     setIsLoggedIn(false);
   };
 
+
+  
   useEffect(() => {
     const fetchApiKey = async () => {
       const result = await invoke('getApiKey');

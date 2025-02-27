@@ -1,10 +1,8 @@
-import React, { useState, useEffect } from 'react';
 import { Box, Inline, Button, Link, Form, useForm, xcss, Stack, Tabs, TabList, Tab, TabPanel } from '@forge/react';
 import StartTimer from './start_timer';
-import { invoke } from '@forge/bridge';
-import Tag from '../models/tag';
-import Project from '../models/project';
 import ManualTimer from './manual_timer';
+import ActiveTimer from './active_timer';
+import React from 'react';
 
 const containerStyles = xcss({
   backgroundColor: 'elevation.surface.raised',
@@ -22,26 +20,7 @@ const newContainer = xcss({
 const Scaffold = ({ resetApiKey }) => {
   const { handleSubmit } = useForm();
 
-  const [projects, setProjects] = useState([]);
-  const tags = Tag.tags;
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      const result = await invoke('getProjects');
-      if (result.success) {
-        const projectsList = result.projects.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
-        setProjects(projectsList);
-      } else {
-        console.error('Error fetching projects ', result.error);
-      }
-    };
-    fetchProjects();
-  }, []);
-
-
-  const handleProjectChange = (projectId) => {
-    console.log('projectId', projectId);
-  };
 
   const onResetApiKey = async (data) => {
     resetApiKey();
@@ -50,9 +29,9 @@ const Scaffold = ({ resetApiKey }) => {
   let homePage = StartTimer();
 
 
-  // if (true) {
-  //   homePage = ActiveTimer();
-  // }
+  if (true) {
+    homePage = ActiveTimer();
+  }
 
   return (
     <>
@@ -69,7 +48,7 @@ const Scaffold = ({ resetApiKey }) => {
                 {homePage}
               </TabPanel>
               <TabPanel>
-                <ManualTimer projects={projects} handleProjectChange={handleProjectChange} />
+                <ManualTimer/>
               </TabPanel>
             </Tabs>
           </Stack>

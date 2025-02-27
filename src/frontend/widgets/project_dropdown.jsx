@@ -1,10 +1,11 @@
-import { Select, Stack, Label, RequiredAsterisk } from '@forge/react';
+import { Select, Stack, Label, RequiredAsterisk, Heading,Box } from '@forge/react';
 import React from 'react';
 
 const ProjectDropdown = ({ projects, handleProjectChange, selectedProject }) => {
     return (
         <Stack grow='fill'>
-            <Label labelFor="select">Project: <RequiredAsterisk /></Label>
+            <Label labelFor="select"><Heading as="h5">Project: <RequiredAsterisk /></Heading></Label>
+            <Box padding='space.025'></Box>
             <Select
                 appearance="default"
                 options={projects.map(project => ({ label: project.name, value: project.id }))}

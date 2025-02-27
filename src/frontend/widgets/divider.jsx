@@ -1,18 +1,18 @@
 import { Box, xcss, Stack } from '@forge/react';
 import React from 'react';
 
-const dividerStyles = xcss({
-  color: 'color.text.accent.gray',
-  width: '100%',
-  height: '3px',
-});
 
 const Divider = () => {
 
+  const dividerStyles = xcss({
+    width: '100%',
+    height: '1px',
+  });
+
   return (
-    <Stack>
+    <Stack grow='fill' alignInline='center'>
       <Box padding='space.100'></Box>
-      <Box xcss={dividerStyles}></Box>
+      <Box backgroundColor='color.background.accent.gray.bolder.pressed' xcss={dividerStyles}>   </Box>
       <Box padding='space.100'></Box>
     </Stack>
   );
