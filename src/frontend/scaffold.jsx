@@ -1,8 +1,9 @@
-import { Box, Inline, Button, Link, Form, useForm, xcss, Stack, Tabs, TabList, Tab, TabPanel } from '@forge/react';
+import { Box, Inline, Button, Link, Form, useForm, xcss, Stack, Tabs, TabList, Tab, TabPanel,useProductContext } from '@forge/react';
 import StartTimer from './start_timer';
 import ManualTimer from './manual_timer';
 import ActiveTimer from './active_timer';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+
 
 const containerStyles = xcss({
   backgroundColor: 'elevation.surface.raised',
@@ -17,10 +18,23 @@ const newContainer = xcss({
 
 });
 
+
 const Scaffold = ({ resetApiKey }) => {
   const { handleSubmit } = useForm();
+  const context = useProductContext();
+  // const [data, setData] = useState(null);
 
+  useEffect(() => {
+    if (context) {
+      const fetchIssueData = async () => {
+        const { extension: { board } } = context;
+        console.log('board', board);
+        setData(await requestIssueData(board));
+      };
 
+      fetchIssueData();
+    }
+  }, []);
 
   const onResetApiKey = async (data) => {
     resetApiKey();
