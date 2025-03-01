@@ -3,7 +3,7 @@ import StartTimer from './start_timer';
 import ManualTimer from './manual_timer';
 import ActiveTimer from './active_timer';
 import React, { useEffect, useState } from 'react';
-
+import api, { route } from "@forge/api";
 
 const containerStyles = xcss({
   backgroundColor: 'elevation.surface.raised',
@@ -21,20 +21,32 @@ const newContainer = xcss({
 
 const Scaffold = ({ resetApiKey }) => {
   const { handleSubmit } = useForm();
+  const [data, setData] = useState(null);
   const context = useProductContext();
-  // const [data, setData] = useState(null);
+  const issueKey = 'KAN-1';
 
   useEffect(() => {
-    if (context) {
+
+
+    console.log('issueKey', issueKey);
+
       const fetchIssueData = async () => {
-        const { extension: { board } } = context;
-        console.log('board', board);
-        setData(await requestIssueData(board));
+        if (issueKey) {
+        const response = await api.asUser().requestJira(route`/rest/api/3/issue/{issueKey}`, {
+          headers: {
+            'Accept': 'application/json'
+          }
+        });
+      
+        setData(response.json());
+      }
       };
 
       fetchIssueData();
-    }
+  
   }, []);
+
+  console.log('data', data);
 
   const onResetApiKey = async (data) => {
     resetApiKey();
