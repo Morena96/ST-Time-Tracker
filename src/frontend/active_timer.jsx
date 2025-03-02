@@ -11,8 +11,6 @@ import { Stack, Box, Button, useForm, Modal, ModalBody, ModalTransition, ModalTi
 const ActiveTimer = (summary ) => {
   const { handleSubmit } = useForm();
 
-  console.log('summary', summary);
-
   const [projects, setProjects] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const closeModal = () => setIsOpen(false);
@@ -24,7 +22,7 @@ const ActiveTimer = (summary ) => {
     const fetchProjects = async () => {
       const result = await invoke('getProjects');
       if (result.success) {
-        const projectsList = result.projects.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
+        const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
         setProjects(projectsList);
       } else {
         console.error('Error fetching projects ', result.error);

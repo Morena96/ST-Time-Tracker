@@ -6,10 +6,16 @@ import Scaffold from './scaffold';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
+  const [user, setUser] = useState(null);
 
   const checkApiKey = async (apiKey) => {
     console.log('checkApiKey called with apiKey:', apiKey);
     const result = await invoke('checkApiKey', { 'apiKey': apiKey });
+
+    if (result.success) {
+      setUser(result.user);
+    }
+
     setIsLoggedIn(result.success);
     return result.success;
   };
@@ -36,7 +42,7 @@ const App = () => {
   }, []);
 
   if (isLoggedIn) {
-    return <Scaffold resetApiKey={resetApiKey} />;
+    return <Scaffold resetApiKey={resetApiKey} user={user} />;
   } else if (isLoggedIn === false) {
     return <LoginPage checkApiKey={checkApiKey} />;
   } else {

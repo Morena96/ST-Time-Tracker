@@ -17,7 +17,7 @@ const ManualTimer = ({ summary }) => {
     const fetchProjects = async () => {
       const result = await invoke('getProjects');
       if (result.success) {
-        const projectsList = result.projects.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
+        const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
         setProjects(projectsList);
       } else {
         console.error('Error fetching projects ', result.error);

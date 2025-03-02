@@ -17,7 +17,7 @@ resolver.define('getIssueData', async ({ payload }) => {
     });
     return { success: true, data: await response.json() };
   } catch (error) {
-    console.log('Error fetching issue data 3:', error);
+    console.log('Error fetching issue data:', error);
     return { success: false, error: 'Error fetching issue data 3' };
   }
 });
@@ -48,13 +48,15 @@ resolver.define('checkApiKey', async ({ payload }) => {
     
     await checkResponse('checkApiKey', result);
 
+    const user = await result.json();
+
     if (result.ok) {
       await storage.set('apiKey', payload.apiKey);
     } else {
       await storage.delete('apiKey');
     }
 
-    return { success: result.ok };
+    return { success: result.ok ,user};
 
   } catch (error) {
     await storage.delete('apiKey');
@@ -63,30 +65,20 @@ resolver.define('checkApiKey', async ({ payload }) => {
 });
 
 resolver.define('getProjects', async () => {
-  console.log('getProjects called');
-
-  try {
-
-    const apiKey = await storage.get('apiKey');
-    const result = await fetch(`${baseUrl}/internal/time_entries/projects_for_search`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json; charset=UTF-8',
-      }
-    });
-    
-    await checkResponse('getProjects', result);
-
-    if (result.ok) {
-      const projects = await result.json();
-      return { success: true, projects };
-    } else {
-      return { success: false, error: 'No projects found' };
+  const apiKey = await storage.get('apiKey');
+  const result = await fetch(`${baseUrl}/internal/time_entries/projects_for_search`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json; charset=UTF-8',
     }
-  } catch (error) {
-    return { success: false, error: error.message }; 
-  }
+  });
+
+  await checkResponse('getProjects', result);
+
+  const projectsDict = await result.json();
+
+  return { success: true, projects: projectsDict.projects };
 });
 
 resolver.define('startTimer', async (req) => {
@@ -107,6 +99,25 @@ resolver.define('stopActiveTimer', async () => {
 resolver.define('getActiveTimer', async () => {
   const timerStart = await storage.get('timerStart');
   return { isRunning: !!timerStart, startTime: timerStart };
+});
+
+resolver.define('getRemoteActiveTimer', async ({ payload }) => {
+  const apiKey = await storage.get('apiKey');
+  const url = `${baseUrl}/internal/time_entries/report?user_ids=${payload.user_id}&page=1&limit=25&order_by=time&sort_to=desc`;
+
+  const result = await fetch(url, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json; charset=UTF-8',
+    }
+  });
+
+  await checkResponse('getRemoteActiveTimer', result);
+
+  const activeTimer = await result.json();
+
+  return { success: true, activeTimer };
 });
 
 resolver.define('changeTimerDescription', async ({ payload }) => {

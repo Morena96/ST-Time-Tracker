@@ -19,22 +19,21 @@ const newContainer = xcss({
 });
 
 
-const Scaffold = ({ resetApiKey }) => {
+const Scaffold = ({ resetApiKey, user }) => {
   const { handleSubmit } = useForm();
   const [summary, setSummary] = useState('');
   const context = useProductContext();
+  const [activeTimer, setActiveTimer] = useState(null);
 
 
   useEffect(() => {
 
     if (context) {
-      console.log('context', context);
       const fetchIssueData = async () => {
         const issueKey = context?.extension?.issue?.key;
 
         const result = await invoke('getIssueData', { 'issueKey': issueKey });
         if (result.success) {
-          console.log('result', result.data.fields.summary);
           setSummary('[' + issueKey + ']: ' + result.data.fields.summary);
         } else {
           console.log('result', result);
@@ -43,9 +42,22 @@ const Scaffold = ({ resetApiKey }) => {
 
       fetchIssueData();
     }
-  }, [context]);
 
-  console.log('summary', summary);
+
+    const fetchActiveTimer = async () => {
+      const result = await invoke('getRemoteActiveTimer', { 'user_id': user.id });
+      if (result.success) {
+        const activeTimer = result.activeTimer;
+        for (const timeEntry of activeTimer.time_entries) {
+          if (timeEntry.end_date === null) {
+            console.log('timeEntry', timeEntry);
+            setActiveTimer(timeEntry);
+          }
+        }
+      }
+    };
+    fetchActiveTimer();
+  }, [context]);
 
   const onResetApiKey = async (data) => {
     resetApiKey();
