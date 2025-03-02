@@ -1,9 +1,9 @@
-import { Box, Inline, Button, Link, Form, useForm, xcss, Stack, Tabs, TabList, Tab, TabPanel,useProductContext } from '@forge/react';
+import { Box, Inline, Button, Link, Form, useForm, xcss, Stack, Tabs, TabList, Tab, TabPanel, useProductContext } from '@forge/react';
 import StartTimer from './start_timer';
 import ManualTimer from './manual_timer';
 import ActiveTimer from './active_timer';
 import React, { useEffect, useState } from 'react';
-import api, { route } from "@forge/api";
+import { invoke } from '@forge/bridge';
 
 const containerStyles = xcss({
   backgroundColor: 'elevation.surface.raised',
@@ -21,32 +21,31 @@ const newContainer = xcss({
 
 const Scaffold = ({ resetApiKey }) => {
   const { handleSubmit } = useForm();
-  const [data, setData] = useState(null);
+  const [summary, setSummary] = useState(null);
   const context = useProductContext();
-  const issueKey = 'KAN-1';
+
 
   useEffect(() => {
 
-
-    console.log('issueKey', issueKey);
-
+    if (context) {
+      console.log('context', context);
       const fetchIssueData = async () => {
-        if (issueKey) {
-        const response = await api.asUser().requestJira(route`/rest/api/3/issue/{issueKey}`, {
-          headers: {
-            'Accept': 'application/json'
-          }
-        });
-      
-        setData(response.json());
-      }
+        const issueKey = context?.extension?.issue?.key;
+
+        const result = await invoke('getIssueData', { 'issueKey': issueKey });
+        if (result.success) {
+          console.log('result', result.data.fields.summary);
+          setSummary(result.data.fields.summary);
+        } else {
+          console.log('result', result);
+        }
       };
 
       fetchIssueData();
-  
-  }, []);
+    }
+  }, [context]);
 
-  console.log('data', data);
+  console.log('summary', summary);
 
   const onResetApiKey = async (data) => {
     resetApiKey();
@@ -74,7 +73,7 @@ const Scaffold = ({ resetApiKey }) => {
                 {homePage}
               </TabPanel>
               <TabPanel>
-                <ManualTimer/>
+                <ManualTimer />
               </TabPanel>
             </Tabs>
           </Stack>

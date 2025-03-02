@@ -1,10 +1,26 @@
 import Resolver from '@forge/resolver';
 import { storage, fetch } from '@forge/api';
 import { checkResponse } from './utils/checkResponse';
+import api, { route } from "@forge/api";
 const resolver = new Resolver();
 
 // const baseUrl = 'https://scrumteams.herokuapp.com/v2';
 const baseUrl = 'https://scrumlaunch-teams-dev.herokuapp.com/v2';
+
+resolver.define('getIssueData', async ({ payload }) => {
+  const issueKey = payload.issueKey;
+  try {
+    const response = await api.asApp().requestJira(route`/rest/api/3/issue/${issueKey}`, {
+      headers: {
+        'Accept': 'application/json'
+      }
+    });
+    return { success: true, data: await response.json() };
+  } catch (error) {
+    console.log('Error fetching issue data 3:', error);
+    return { success: false, error: 'Error fetching issue data 3' };
+  }
+});
 
 resolver.define('storeApiKey', async ({ payload }) => {
   await storage.set('apiKey', payload.apiKey);
