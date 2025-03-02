@@ -21,7 +21,7 @@ const newContainer = xcss({
 
 const Scaffold = ({ resetApiKey }) => {
   const { handleSubmit } = useForm();
-  const [summary, setSummary] = useState(null);
+  const [summary, setSummary] = useState('');
   const context = useProductContext();
 
 
@@ -35,7 +35,7 @@ const Scaffold = ({ resetApiKey }) => {
         const result = await invoke('getIssueData', { 'issueKey': issueKey });
         if (result.success) {
           console.log('result', result.data.fields.summary);
-          setSummary(result.data.fields.summary);
+          setSummary('[' + issueKey + ']: ' + result.data.fields.summary);
         } else {
           console.log('result', result);
         }
@@ -55,7 +55,7 @@ const Scaffold = ({ resetApiKey }) => {
 
 
   if (true) {
-    homePage = ActiveTimer();
+    homePage = ActiveTimer(summary);
   }
 
   return (
@@ -73,7 +73,7 @@ const Scaffold = ({ resetApiKey }) => {
                 {homePage}
               </TabPanel>
               <TabPanel>
-                <ManualTimer />
+                <ManualTimer summary={summary} />
               </TabPanel>
             </Tabs>
           </Stack>

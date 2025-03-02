@@ -8,8 +8,10 @@ import Divider from './widgets/divider';
 import DescriptionField from './widgets/description_field';
 import { Stack, Box, Button, useForm, Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader, Text, Strong } from '@forge/react';
 
-const ActiveTimer = () => {
+const ActiveTimer = (summary ) => {
   const { handleSubmit } = useForm();
+
+  console.log('summary', summary);
 
   const [projects, setProjects] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
@@ -41,6 +43,10 @@ const ActiveTimer = () => {
     console.log('tags', tags);
   };
 
+  const setDescription = (description) => {
+    console.log('description', description);
+  };
+
   const onStopTimer = () => {
     console.log('stop timer');
   };
@@ -50,7 +56,7 @@ const ActiveTimer = () => {
 
       <Box padding='space.100'></Box>
 
-      <DescriptionField />
+      <DescriptionField description={summary} setDescription={setDescription} />
 
       <Box padding='space.100'></Box>
 

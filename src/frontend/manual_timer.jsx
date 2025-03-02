@@ -9,7 +9,7 @@ import Project from '../models/project';
 import DescriptionField from './widgets/description_field';
 
 
-const ManualTimer = () => {
+const ManualTimer = ({ summary }) => {
   const [projects, setProjects] = useState([]);
   const tags = Tag.tags;
 
@@ -35,11 +35,15 @@ const ManualTimer = () => {
     console.log('tags', tags);
   };
 
+  const setDescription = (description) => {
+    console.log('description', description);
+  };
+
   return (
     <Stack grow='fill'>
       <Box padding='space.100'></Box>
 
-      <DescriptionField />
+      <DescriptionField description={summary} setDescription={setDescription} />
       <Box padding='space.100'></Box>
 
       <Divider />
