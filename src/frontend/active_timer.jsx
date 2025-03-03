@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { invoke } from '@forge/bridge';
-import Tag from '../models/tag';
-import Project from '../models/project';
+import Tag from './models/tag';
+import Project from './models/project';
 import ProjectDropdown from './widgets/project_dropdown';
 import TagMultiDropdown from './widgets/tag_multi_dropdown';
 import Divider from './widgets/divider';
@@ -18,18 +18,18 @@ const ActiveTimer = (summary ) => {
 
   const tags = Tag.tags;
 
-  useEffect(() => {
-    const fetchProjects = async () => {
-      const result = await invoke('getProjects');
-      if (result.success) {
-        const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
-        setProjects(projectsList);
-      } else {
-        console.error('Error fetching projects ', result.error);
-      }
-    };
-    fetchProjects();
-  }, []);
+  // useEffect(() => {
+  //   const fetchProjects = async () => {
+  //     const result = await invoke('getProjects');
+  //     if (result.success) {
+  //       const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
+  //       setProjects(projectsList);
+  //     } else {
+  //       console.error('Error fetching projects ', result.error);
+  //     }
+  //   };
+  //   fetchProjects();
+  // }, []);
 
 
 

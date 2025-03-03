@@ -103,7 +103,8 @@ resolver.define('getActiveTimer', async () => {
 
 resolver.define('getRemoteActiveTimer', async ({ payload }) => {
   const apiKey = await storage.get('apiKey');
-  const url = `${baseUrl}/internal/time_entries/report?user_ids=${payload.user_id}&page=1&limit=25&order_by=time&sort_to=desc`;
+  const time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const url = `${baseUrl}/internal/time_entries/report?user_ids=${payload.user_id}&page=1&limit=25&order_by=time&sort_to=desc&time_zone=${time_zone}`;
 
   const result = await fetch(url, {
     method: 'GET',

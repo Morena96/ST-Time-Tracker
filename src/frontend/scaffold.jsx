@@ -4,6 +4,7 @@ import ManualTimer from './manual_timer';
 import ActiveTimer from './active_timer';
 import React, { useEffect, useState } from 'react';
 import { invoke } from '@forge/bridge';
+import TimeEntry from './models/time_entry';
 
 const containerStyles = xcss({
   backgroundColor: 'elevation.surface.raised',
@@ -51,7 +52,7 @@ const Scaffold = ({ resetApiKey, user }) => {
         for (const timeEntry of activeTimer.time_entries) {
           if (timeEntry.end_date === null) {
             console.log('timeEntry', timeEntry);
-            setActiveTimer(timeEntry);
+            setActiveTimer(new TimeEntry(timeEntry.id, timeEntry.project_id, timeEntry.start_date, timeEntry.end_date, timeEntry.description, timeEntry.tags));
           }
         }
       }
