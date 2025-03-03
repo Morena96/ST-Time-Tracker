@@ -1,6 +1,6 @@
 import ProjectDropdown from './widgets/project_dropdown';
 import TagMultiDropdown from './widgets/tag_multi_dropdown';
-import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss} from '@forge/react';
+import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss } from '@forge/react';
 import React, { useState, useEffect } from 'react';
 import Divider from './widgets/divider';
 import { invoke } from '@forge/bridge';
@@ -9,7 +9,7 @@ import Project from './models/project';
 import Duration from './models/Duration';
 import DescriptionField from './widgets/description_field';
 import TimeEntry from './models/time_entry';
-import { formatDuration, parseTime, parseDate, formatDate, getLastUnlockedDate ,formatTime, formatDateToHHMM} from './utils/timeUtils';
+import { formatDuration, parseTime, parseDate, formatDate, getLastUnlockedDate, formatTime, formatDateToHHMM, timeStringToNumber, numberToTimeString } from './utils/timeUtils';
 
 const ManualTimer = ({ summary }) => {
   const [projects, setProjects] = useState([]);
@@ -21,8 +21,8 @@ const ManualTimer = ({ summary }) => {
   const [projectId, setProjectId] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
   const [description, setDescription] = useState('');
-
-  console.log('date', date);
+  const [isStartDateFocused, setIsStartDateFocused] = useState(false);
+  const [isEndDateFocused, setIsEndDateFocused] = useState(false);
 
   useEffect(() => {
     // const fetchProjects = async () => {
@@ -49,37 +49,52 @@ const ManualTimer = ({ summary }) => {
     setDescription(description);
   };
 
+  const onFocusStartDate = (e) => {
+    setIsStartDateFocused(true);
+    setStartDate(timeStringToNumber(formatDateToHHMM(startDate)));
+  }
+
+  const onFocusEndDate = (e) => {
+    setIsEndDateFocused(true);
+    setEndDate(timeStringToNumber(formatDateToHHMM(endDate)));
+  }
+
+  const changeStartDate = (e) => {
+    setStartDate(e.target.value);
+  }
+
+  const changeEndDate = (e) => {
+    setEndDate(e.target.value);
+  }
+
   const handleStartDateChange = (e) => {
-    const newStartDate = parseTime(e.target.value, date);
-    if(!newStartDate){
-      newStartDate = startDate;
+    const newStartDate = parseTime(numberToTimeString(startDate), date);
+    if (!newStartDate) {
+      newStartDate = numberToTimeString(startDate);
     }
 
     setStartDate(newStartDate);
     calculateDuration();
 
+    setIsStartDateFocused(false);
   };
 
   const handleEndDateChange = (e) => {
-    const newEndDate = parseTime(e.target.value, date);
-    if(!newEndDate){
-      newEndDate = endDate;
+    console.log('endDate', endDate);
+    const newEndDate = parseTime(numberToTimeString(endDate), date);
+    if (!newEndDate) {
+      newEndDate = numberToTimeString(endDate);
     }
 
     setEndDate(newEndDate);
     calculateDuration();
+    setIsEndDateFocused(false);
   }
 
-  console.log('startDate', formatDateToHHMM(startDate));
-  console.log('endDate', formatDateToHHMM(endDate));
-
   const handleDateChange = (newDate) => {
-    console.log('newDate', newDate);
-    console.log('newDate type:', typeof newDate);
-    console.log(newDate.length);
-    if(newDate===' ' || newDate===null){
+    if (newDate === ' ' || newDate === null) {
       setDate(new Date());
-    }else{
+    } else {
       setDate(parseDate(newDate));
     }
   }
@@ -117,7 +132,7 @@ const ManualTimer = ({ summary }) => {
       <Box padding='space.100'></Box>
       <Inline space='space.050'>
         <Box xcss={datePickerStyle}>
-          <DatePicker 
+          <DatePicker
             defaultValue={formatDate(date)}
             onChange={handleDateChange}
             // dateFormat="YYYY-MM-DD"
@@ -126,16 +141,22 @@ const ManualTimer = ({ summary }) => {
         </Box>
         <Box xcss={rangeInputStyle}>
           <Inline space='space.050'>
-            <Textfield 
-              maxLength={5} 
-              value={formatDateToHHMM(startDate)}
-              onChange={handleStartDateChange} 
+            <Textfield
+              maxLength={5}
+              value={isStartDateFocused ? startDate : formatDateToHHMM(startDate)}
+              onFocus={onFocusStartDate}
+              onChange={changeStartDate}
+              onBlur={handleStartDateChange}
+              type={isStartDateFocused ? 'number' : 'text'}
             />
             <Text> - </Text>
-            <Textfield 
-              maxLength={5} 
-              value={formatDateToHHMM(endDate)} 
-              onChange={handleEndDateChange} 
+            <Textfield
+              maxLength={5}
+              value={isEndDateFocused ? endDate : formatDateToHHMM(endDate)}
+              onFocus={onFocusEndDate}
+              onChange={changeEndDate}
+              onBlur={handleEndDateChange}
+              type={isEndDateFocused ? 'number' : 'text'}
             />
           </Inline>
         </Box>

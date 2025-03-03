@@ -182,3 +182,24 @@ export const getLastUnlockedDate = () => {
   
   return lastUnlockedDay;
 };
+
+/**
+ * Converts time string with colon to number format
+ * @param {string} timeString - Time string in HH:MM format
+ * @returns {number} Time as number in HHMM format
+ */
+export const timeStringToNumber = (timeString) => {
+  if (!timeString) return null;
+  return parseInt(String(timeString).replace(':', ''), 10);
+};
+
+/**
+ * Converts number format back to time string with colon
+ * @param {number} timeNumber - Time as number in HHMM format 
+ * @returns {string} Time string in HH:MM format
+ */
+export const numberToTimeString = (timeNumber) => {
+  if (!timeNumber) return '';
+  const str = timeNumber.toString().padStart(4, '0');
+  return `${str.slice(0,2)}:${str.slice(2)}`;
+};
