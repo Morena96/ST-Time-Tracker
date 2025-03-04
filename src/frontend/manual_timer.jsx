@@ -6,35 +6,40 @@ import Divider from './widgets/divider';
 import { invoke } from '@forge/bridge';
 import Tag from './models/tag';
 import Project from './models/project';
-import Duration from './models/Duration';
 import DescriptionField from './widgets/description_field';
 import TimeEntry from './models/time_entry';
-import { formatDuration, parseTime, parseDate, formatDate, getLastUnlockedDate, formatTime, formatDateToHHMM, timeStringToNumber, numberToTimeString } from './utils/timeUtils';
+import { parseTime, parseDate, formatDate, getLastUnlockedDate, parseStringToDuration, formatDateToHHMM, timeStringToNumberString, numberToTimeString, formatIntToDuration, getYesterday, durationToNumberString } from './utils/timeUtils';
+import Duration from './models/Duration';
 
 const ManualTimer = ({ summary }) => {
   const [projects, setProjects] = useState([]);
   const tags = Tag.tags;
-  const [startDate, setStartDate] = useState(new Date());
-  const [endDate, setEndDate] = useState(new Date());
-  const [date, setDate] = useState(new Date());
+  const [startDate, setStartDate] = useState(null);
+  const [endDate, setEndDate] = useState(null);
+  const [date, setDate] = useState(null);
   const [duration, setDuration] = useState(0);
   const [projectId, setProjectId] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
   const [description, setDescription] = useState('');
   const [isStartDateFocused, setIsStartDateFocused] = useState(false);
   const [isEndDateFocused, setIsEndDateFocused] = useState(false);
+  const [isDurationFocused, setIsDurationFocused] = useState(false);
 
   useEffect(() => {
-    // const fetchProjects = async () => {
-    //   const result = await invoke('getProjects');
-    //   if (result.success) {
-    //     const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
-    //     setProjects(projectsList);
-    //   } else {
-    //     console.error('Error fetching projects ', result.error);
-    //   }
-    // };
-    // fetchProjects();
+    setStartDate(formatDateToHHMM(new Date()));
+    setEndDate(formatDateToHHMM(new Date()));
+    setDate(new Date());
+
+    const fetchProjects = async () => {
+      const result = await invoke('getProjects');
+      if (result.success) {
+        const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
+        setProjects(projectsList);
+      } else {
+        console.error('Error fetching projects ', result.error);
+      }
+    };
+    fetchProjects();
   }, []);
 
   const handleProjectChange = (projectId) => {
@@ -51,12 +56,19 @@ const ManualTimer = ({ summary }) => {
 
   const onFocusStartDate = (e) => {
     setIsStartDateFocused(true);
-    setStartDate(timeStringToNumber(formatDateToHHMM(startDate)));
+    setStartDate(timeStringToNumberString(startDate));
   }
 
   const onFocusEndDate = (e) => {
     setIsEndDateFocused(true);
-    setEndDate(timeStringToNumber(formatDateToHHMM(endDate)));
+    setEndDate(timeStringToNumberString(endDate));
+  }
+  
+  const onFocusDuration = (e) => {
+    console.log('onFocusDuration: ', duration);
+    console.log('durationToNumberString: ', durationToNumberString(Duration.fromSeconds(duration).toString()));
+    setIsDurationFocused(true);
+    setDuration(durationToNumberString(Duration.fromSeconds(duration).toString()));
   }
 
   const changeStartDate = (e) => {
@@ -67,46 +79,82 @@ const ManualTimer = ({ summary }) => {
     setEndDate(e.target.value);
   }
 
+  const changeDuration = (e) => {
+    setDuration(e.target.value);
+  }
+
   const handleStartDateChange = (e) => {
-    const newStartDate = parseTime(numberToTimeString(startDate), date);
-    if (!newStartDate) {
-      newStartDate = numberToTimeString(startDate);
+    const timeString = numberToTimeString(startDate);
+    const newStartDate = parseTime(timeString, date);
+    var endTime = parseTime(endDate, date);
+
+    if (newStartDate === null) {
+      newStartDate = timeString;
     }
 
-    setStartDate(newStartDate);
-    calculateDuration();
 
+    if (newStartDate > endTime) {
+      console.log('newStartDate > endTime', endTime);
+      endTime = new Date(endTime.setDate(endTime.getDate() + 1));
+    }
+
+    if (!(getYesterday(endTime) < newStartDate)) {
+      console.log('endTime.getDate() - 1 < newStartDate.getDate()', endTime);
+      endTime = new Date(endTime.setDate(endTime.getDate() - 1));
+    }
+    console.log('newStartDate', newStartDate);
+    console.log('endTime', endTime);
+
+    const diffInMs = endTime.getTime() - newStartDate.getTime();
+    const diffInSeconds = Math.floor(diffInMs / 1000);
+
+
+    setDuration(diffInSeconds);
     setIsStartDateFocused(false);
+    setStartDate(formatDateToHHMM(newStartDate));
+    setEndDate(formatDateToHHMM(endTime));
   };
 
+
   const handleEndDateChange = (e) => {
-    console.log('endDate', endDate);
-    const newEndDate = parseTime(numberToTimeString(endDate), date);
-    if (!newEndDate) {
-      newEndDate = numberToTimeString(endDate);
+    const timeString = numberToTimeString(endDate);
+    var newEndDate = parseTime(timeString, date);
+    const startTime = parseTime(startDate, date);
+
+    if (newEndDate === null) {
+      newEndDate = timeString;
     }
 
-    setEndDate(newEndDate);
-    calculateDuration();
+    if (startTime > newEndDate) {
+      newEndDate = new Date(newEndDate.setDate(newEndDate.getDate() + 1));
+    }
+
+    if (!(getYesterday(newEndDate) < startTime)) {
+      newEndDate = new Date(newEndDate.setDate(newEndDate.getDate() - 1));
+    }
+
+    const diffInMs = newEndDate.getTime() - startTime.getTime();
+    const diffInSeconds = Math.floor(diffInMs / 1000);
+
+    setDuration(diffInSeconds);
     setIsEndDateFocused(false);
+    setEndDate(formatDateToHHMM(newEndDate));
   }
+
+  const handleDurationChange = (e) => {
+    const startTime = parseTime(startDate, date);
+    const newDuration = parseStringToDuration(duration);
+    setEndDate(formatDateToHHMM(new Date(startTime.setSeconds(startTime.getSeconds() + newDuration))));
+    setDuration(newDuration);
+    setIsDurationFocused(false);
+  }
+
 
   const handleDateChange = (newDate) => {
     if (newDate === ' ' || newDate === null) {
       setDate(new Date());
     } else {
       setDate(parseDate(newDate));
-    }
-  }
-
-  const calculateDuration = () => {
-    if (startDate && endDate) {
-      const startDuration = parseTime(startDate, date);
-      const endDuration = parseTime(endDate, date);
-      if (startDuration && endDuration) {
-        const diff = endDuration.inSeconds - startDuration.inSeconds;
-        setDuration(diff);
-      }
     }
   }
 
@@ -130,6 +178,16 @@ const ManualTimer = ({ summary }) => {
 
       <DescriptionField description={summary} setDescription={handleDescriptionChange} />
       <Box padding='space.100'></Box>
+      <Textfield
+        maxLength={6}
+        onChange={changeDuration}
+        onFocus={onFocusDuration}
+        onBlur={handleDurationChange}
+        value={isDurationFocused?duration: formatIntToDuration(duration)}
+        type={isDurationFocused ? 'number' : 'text'}
+      />
+
+      <Box padding='space.100'></Box>
       <Inline space='space.050'>
         <Box xcss={datePickerStyle}>
           <DatePicker
@@ -142,8 +200,8 @@ const ManualTimer = ({ summary }) => {
         <Box xcss={rangeInputStyle}>
           <Inline space='space.050'>
             <Textfield
-              maxLength={5}
-              value={isStartDateFocused ? startDate : formatDateToHHMM(startDate)}
+              maxLength={4}
+              value={startDate}
               onFocus={onFocusStartDate}
               onChange={changeStartDate}
               onBlur={handleStartDateChange}
@@ -151,8 +209,8 @@ const ManualTimer = ({ summary }) => {
             />
             <Text> - </Text>
             <Textfield
-              maxLength={5}
-              value={isEndDateFocused ? endDate : formatDateToHHMM(endDate)}
+              maxLength={4}
+              value={endDate}
               onFocus={onFocusEndDate}
               onChange={changeEndDate}
               onBlur={handleEndDateChange}
@@ -161,12 +219,6 @@ const ManualTimer = ({ summary }) => {
           </Inline>
         </Box>
       </Inline>
-
-      {duration !== 0 && (
-        <Box padding='space.100'>
-          <Text>Duration: {formatDuration(Duration.fromSeconds(duration))}</Text>
-        </Box>
-      )}
 
       <Box padding='space.100'></Box>
       <Button appearance="primary" onClick={addTimeEntry}>

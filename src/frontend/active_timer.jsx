@@ -18,18 +18,18 @@ const ActiveTimer = (summary ) => {
 
   const tags = Tag.tags;
 
-  // useEffect(() => {
-  //   const fetchProjects = async () => {
-  //     const result = await invoke('getProjects');
-  //     if (result.success) {
-  //       const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
-  //       setProjects(projectsList);
-  //     } else {
-  //       console.error('Error fetching projects ', result.error);
-  //     }
-  //   };
-  //   fetchProjects();
-  // }, []);
+  useEffect(() => {
+    const fetchProjects = async () => {
+      const result = await invoke('getProjects');
+      if (result.success) {
+        const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
+        setProjects(projectsList);
+      } else {
+        console.error('Error fetching projects ', result.error);
+      }
+    };
+    fetchProjects();
+  }, []);
 
 
 
