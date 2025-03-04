@@ -95,6 +95,31 @@ resolver.define('stopActiveTimer', async () => {
   return { duration };
 });
 
+resolver.define('createTimeEntry', async ({ payload }) => {
+  const apiKey = await storage.get('apiKey');
+  console.log('payload', payload);
+  const result = await fetch(`${baseUrl}/internal/time_entries`, {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: JSON.stringify(payload)
+  });
+  var error = null;
+
+  if(!result.ok) {
+    const errorText = await result.text();
+    try {
+      const errorJson = JSON.parse(errorText);
+      error = errorJson.errors;
+    } catch {
+      error = errorText;
+    }
+  }
+
+  return { success: result.ok, error: error };
+});
 
 resolver.define('getActiveTimer', async () => {
   const timerStart = await storage.get('timerStart');
@@ -143,8 +168,6 @@ resolver.define('deleteActiveTimer', async () => {
   await storage.delete('timerProject');
   return { success: true };
 });
-
-
 
 
 

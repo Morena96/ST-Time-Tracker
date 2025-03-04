@@ -1,6 +1,6 @@
 import ProjectDropdown from './widgets/project_dropdown';
 import TagMultiDropdown from './widgets/tag_multi_dropdown';
-import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss, SectionMessage } from '@forge/react';
+import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss } from '@forge/react';
 import React, { useState, useEffect } from 'react';
 import Divider from './widgets/divider';
 import { invoke } from '@forge/bridge';
@@ -11,6 +11,7 @@ import TimeEntry from './models/time_entry';
 import { parseTime, parseDate, formatDate, getLastUnlockedDate, parseStringToDuration, formatDateToHHMM, timeStringToNumberString, numberToTimeString, formatIntToDuration, getYesterday, durationToNumberString } from './utils/timeUtils';
 import Duration from './models/Duration';
 import ErrorMessage from './widgets/error_message';
+import SuccessMessage from './widgets/success_message';
 
 const ManualTimer = ({ summary }) => {
   const [projects, setProjects] = useState([]);
@@ -26,7 +27,11 @@ const ManualTimer = ({ summary }) => {
   const [isEndDateFocused, setIsEndDateFocused] = useState(false);
   const [isDurationFocused, setIsDurationFocused] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+
   useEffect(() => {
+    setDescription(summary);
     setStartDate(formatDateToHHMM(new Date()));
     setEndDate(formatDateToHHMM(new Date()));
     setDate(new Date());
@@ -41,11 +46,10 @@ const ManualTimer = ({ summary }) => {
       }
     };
     fetchProjects();
-  }, []);
+  }, [summary]);
 
   const handleProjectChange = (projectId) => {
     setProjectId(projectId);
-    setErrorMessage("please select a project");
   };
 
   const handleTagsChange = (tags) => {
@@ -67,8 +71,6 @@ const ManualTimer = ({ summary }) => {
   }
   
   const onFocusDuration = (e) => {
-    console.log('onFocusDuration: ', duration);
-    console.log('durationToNumberString: ', durationToNumberString(Duration.fromSeconds(duration).toString()));
     setIsDurationFocused(true);
     setDuration(durationToNumberString(Duration.fromSeconds(duration).toString()));
   }
@@ -160,9 +162,39 @@ const ManualTimer = ({ summary }) => {
     }
   }
 
-  const addTimeEntry = () => {
-    const timeEntry = new TimeEntry(projectId, selectedTags, description, startDate, endDate);
+  const addTimeEntry = async () => {
+    var errorMsg = '';
+    if (!projectId) {
+      errorMsg = ' project';
+    }
+
+    if(description.length === 0) {
+      if(errorMsg.length > 0) {
+        errorMsg += ',';
+      }
+      errorMsg += ' description';
+    }
+
+    if(errorMsg.length > 0) {
+      setErrorMessage("Can't save, fields missing:" + errorMsg);
+      return;
+    }
+
+    const timeEntry = new TimeEntry(null, projectId, startDate, endDate, date, description, selectedTags);
     console.log('timeEntry', timeEntry);
+
+    setIsLoading(true);
+
+    const result = await invoke('createTimeEntry', timeEntry.toJson());
+    console.log('result', result);
+
+    if (result.success) {
+      setSuccessMessage("Time entry has been created");
+    } else {
+      setErrorMessage(result.error);
+    }
+
+    setIsLoading(false);
   };
 
   const datePickerStyle = xcss({
@@ -230,6 +262,8 @@ const ManualTimer = ({ summary }) => {
       <Divider />
 
       {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
+      {successMessage && <SuccessMessage message={successMessage} onClose={() => setSuccessMessage(null)} />}
+
       <Box padding='space.100'></Box>
       <ProjectDropdown projects={projects} handleProjectChange={handleProjectChange} />
       <Box padding='space.100'></Box>

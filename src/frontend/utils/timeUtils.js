@@ -249,3 +249,11 @@ export const getYesterday = (date) => {
     return yesterday;
 };
 
+/**
+ * Converts timezone offset to hours as a double value
+ * @param {number} timeZoneOffset - Timezone offset in minutes
+ * @returns {number} Timezone offset in hours as a double
+ */
+export const getTimezoneOffsetInHours = () => {
+    return -new Date().getTimezoneOffset() / 60;
+};
