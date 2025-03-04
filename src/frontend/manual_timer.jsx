@@ -1,6 +1,6 @@
 import ProjectDropdown from './widgets/project_dropdown';
 import TagMultiDropdown from './widgets/tag_multi_dropdown';
-import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss } from '@forge/react';
+import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss, SectionMessage } from '@forge/react';
 import React, { useState, useEffect } from 'react';
 import Divider from './widgets/divider';
 import { invoke } from '@forge/bridge';
@@ -10,6 +10,7 @@ import DescriptionField from './widgets/description_field';
 import TimeEntry from './models/time_entry';
 import { parseTime, parseDate, formatDate, getLastUnlockedDate, parseStringToDuration, formatDateToHHMM, timeStringToNumberString, numberToTimeString, formatIntToDuration, getYesterday, durationToNumberString } from './utils/timeUtils';
 import Duration from './models/Duration';
+import ErrorMessage from './widgets/error_message';
 
 const ManualTimer = ({ summary }) => {
   const [projects, setProjects] = useState([]);
@@ -24,7 +25,7 @@ const ManualTimer = ({ summary }) => {
   const [isStartDateFocused, setIsStartDateFocused] = useState(false);
   const [isEndDateFocused, setIsEndDateFocused] = useState(false);
   const [isDurationFocused, setIsDurationFocused] = useState(false);
-
+  const [errorMessage, setErrorMessage] = useState(null);
   useEffect(() => {
     setStartDate(formatDateToHHMM(new Date()));
     setEndDate(formatDateToHHMM(new Date()));
@@ -44,6 +45,7 @@ const ManualTimer = ({ summary }) => {
 
   const handleProjectChange = (projectId) => {
     setProjectId(projectId);
+    setErrorMessage("please select a project");
   };
 
   const handleTagsChange = (tags) => {
@@ -227,6 +229,8 @@ const ManualTimer = ({ summary }) => {
 
       <Divider />
 
+      {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
+      <Box padding='space.100'></Box>
       <ProjectDropdown projects={projects} handleProjectChange={handleProjectChange} />
       <Box padding='space.100'></Box>
       <TagMultiDropdown tags={tags} handleTagsChange={handleTagsChange} />
