@@ -20,20 +20,20 @@ const LoginPage = ({ fetchActiveTimer }) => {
     return (
         <Form onSubmit={handleSubmit(onSubmitApiKey)}>
             <Inline>
-                <Box padding='space.200'></Box>
+                <Box padding='space.100'></Box>
                 <Text>Enter your ScrumTeams API key:</Text>
             </Inline>
             <Box padding='space.050'></Box>
             <Inline alignBlock='center'>
-                <Box padding='space.200'></Box>
+                <Box padding='space.100'></Box>
                 <Textfield {...register('apiKey')} value={value} onChange={(e) => setValue(e.target.value)}></Textfield>
                 <Box padding='space.050'></Box>
                 <Button type='submit'>Update</Button>
-                <Box padding='space.200'></Box>
+                <Box padding='space.100'></Box>
             </Inline>
             <Box padding='space.050'></Box>
             <Inline>
-                <Box padding='space.200'></Box>
+                <Box padding='space.100'></Box>
                 <Link href={url} openNewTab={true}>Get API key</Link>
             </Inline>
         </Form>

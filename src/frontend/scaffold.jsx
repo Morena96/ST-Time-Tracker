@@ -57,7 +57,7 @@ const Scaffold = ({ resetApiKey, activeTimer }) => {
   let homePage = StartTimer();
 
 
-  if (true) {
+  if (false) {
     homePage = ActiveTimer(summary);
   }
 
