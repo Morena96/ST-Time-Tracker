@@ -3,19 +3,25 @@ import ForgeReconciler, { Box, Spinner, Stack } from '@forge/react';
 import { invoke } from '@forge/bridge';
 import LoginPage from './login';
 import Scaffold from './scaffold';
+import TimeEntry from './models/time_entry';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
-  const [user, setUser] = useState(null);
+  const [activeTimer, setActiveTimer] = useState(null);
 
-  const checkApiKey = async (apiKey) => {
-    console.log('checkApiKey called with apiKey:', apiKey);
-    const result = await invoke('checkApiKey', { 'apiKey': apiKey });
-
+  const fetchActiveTimer = async (apiKey) => {
+    const result = await invoke('getRemoteActiveTimer', { 'apiKey': apiKey });
     if (result.success) {
-      setUser(result.user);
+      const activeTimer = result.activeTimer;
+      for (const timeEntry of activeTimer.time_entries) {
+        if (timeEntry.end_date === null) {
+          console.log('timeEntry', timeEntry);
+          setActiveTimer(new TimeEntry(timeEntry.id, timeEntry.project_id, timeEntry.start_date, timeEntry.end_date, timeEntry.description, timeEntry.tags));
+        }
+      }
+    }else{
+      console.log('error', result.error);
     }
-
     setIsLoggedIn(result.success);
     return result.success;
   };
@@ -25,14 +31,12 @@ const App = () => {
     setIsLoggedIn(false);
   };
 
-
-  
   useEffect(() => {
     const fetchApiKey = async () => {
       const result = await invoke('getApiKey');
       console.log('fetchApiKey result:', result.apiKey);
       if (result.apiKey) {
-        checkApiKey(result.apiKey);
+        fetchActiveTimer(result.apiKey);
       } else {
         setIsLoggedIn(false);
       }
@@ -42,9 +46,9 @@ const App = () => {
   }, []);
 
   if (isLoggedIn) {
-    return <Scaffold resetApiKey={resetApiKey} user={user} />;
+    return <Scaffold resetApiKey={resetApiKey} activeTimer={activeTimer} />;
   } else if (isLoggedIn === false) {
-    return <LoginPage checkApiKey={checkApiKey} />;
+    return <LoginPage fetchActiveTimer={fetchActiveTimer} />;
   } else {
     return <Stack alignInline="center" grow='fill'>
       <Box padding='space.200'></Box>

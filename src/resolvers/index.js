@@ -3,9 +3,8 @@ import { storage, fetch } from '@forge/api';
 import { checkResponse } from './utils/checkResponse';
 import api, { route } from "@forge/api";
 const resolver = new Resolver();
-
-// const baseUrl = 'https://scrumteams.herokuapp.com/v2';
-const baseUrl = 'https://scrumlaunch-teams-dev.herokuapp.com/v2';
+import { baseUrl } from '../frontend/utils/app_constants';
+import { getTimezoneOffsetInHours } from '../frontend/utils/timeUtils';
 
 resolver.define('getIssueData', async ({ payload }) => {
   const issueKey = payload.issueKey;
@@ -36,37 +35,78 @@ resolver.define('getApiKey', async ({ payload }) => {
   }
 });
 
-resolver.define('checkApiKey', async ({ payload }) => {
-  try {
-    const result = await fetch(`${baseUrl}/internal/users/info`, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${payload.apiKey}`,
-        'Content-Type': 'application/json; charset=UTF-8',
-      }
-    });
-    
-    await checkResponse('checkApiKey', result);
+resolver.define('getRemoteActiveTimer', async ({ payload }) => {
+  const apiKey = payload.apiKey;
+  const time_zone = getTimezoneOffsetInHours();
+  const url = `${baseUrl}/user_time_entries?page=1&limit=25&order_by=time&sort_to=desc&time_zone=${time_zone}`;
 
-    const user = await result.json();
+  console.log('url', url);
 
-    if (result.ok) {
-      await storage.set('apiKey', payload.apiKey);
-    } else {
-      await storage.delete('apiKey');
+  const result = await fetch(url, {
+    method: 'GET',
+    headers: {
+      "HTTP-USER-TOKEN": apiKey,
+      'Content-Type': 'application/json; charset=UTF-8',
     }
+  });
 
-    return { success: result.ok ,user};
-
-  } catch (error) {
+  if (result.ok) {
+    await storage.set('apiKey', apiKey);
+  } else {
     await storage.delete('apiKey');
-    return { success: false };
+  }
+
+  var error = null;
+
+  if (!result.ok) {
+    const errorText = await result.text();
+    try {
+      const errorJson = JSON.parse(errorText);
+      error = errorJson.errors;
+    } catch {
+      error = errorText;
+    }
+  }
+
+  if (result.ok) {
+    const activeTimer = await result.json();
+    return { success: result.ok, activeTimer: activeTimer };
+  } else {
+    return { success: result.ok, error: error };
   }
 });
 
+// resolver.define('checkApiKey', async ({ payload }) => {
+//   try {
+//     const result = await fetch(`${baseUrl}/users/info`, {
+//       method: 'GET',
+//       headers: {
+//         'Authorization': `Bearer ${payload.apiKey}`,
+//         'Content-Type': 'application/json; charset=UTF-8',
+//       }
+//     });
+
+//     await checkResponse('checkApiKey', result);
+
+//     const user = await result.json();
+
+//     if (result.ok) {
+//       await storage.set('apiKey', payload.apiKey);
+//     } else {
+//       await storage.delete('apiKey');
+//     }
+
+//     return { success: result.ok ,user};
+
+//   } catch (error) {
+//     await storage.delete('apiKey');
+//     return { success: false };
+//   }
+// });
+
 resolver.define('getProjects', async () => {
   const apiKey = await storage.get('apiKey');
-  const result = await fetch(`${baseUrl}/internal/time_entries/projects_for_search`, {
+  const result = await fetch(`${baseUrl}/user_time_entries/projects`, {
     method: 'GET',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
@@ -98,7 +138,7 @@ resolver.define('stopActiveTimer', async () => {
 resolver.define('createTimeEntry', async ({ payload }) => {
   const apiKey = await storage.get('apiKey');
   console.log('payload', payload);
-  const result = await fetch(`${baseUrl}/internal/time_entries`, {
+  const result = await fetch(`${baseUrl}/user_time_entries`, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${apiKey}`,
@@ -108,7 +148,7 @@ resolver.define('createTimeEntry', async ({ payload }) => {
   });
   var error = null;
 
-  if(!result.ok) {
+  if (!result.ok) {
     const errorText = await result.text();
     try {
       const errorJson = JSON.parse(errorText);
@@ -126,25 +166,7 @@ resolver.define('getActiveTimer', async () => {
   return { isRunning: !!timerStart, startTime: timerStart };
 });
 
-resolver.define('getRemoteActiveTimer', async ({ payload }) => {
-  const apiKey = await storage.get('apiKey');
-  const time_zone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-  const url = `${baseUrl}/internal/time_entries/report?user_ids=${payload.user_id}&page=1&limit=25&order_by=time&sort_to=desc&time_zone=${time_zone}`;
 
-  const result = await fetch(url, {
-    method: 'GET',
-    headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json; charset=UTF-8',
-    }
-  });
-
-  await checkResponse('getRemoteActiveTimer', result);
-
-  const activeTimer = await result.json();
-
-  return { success: true, activeTimer };
-});
 
 resolver.define('changeTimerDescription', async ({ payload }) => {
   await storage.set('timerDescription', payload.description);

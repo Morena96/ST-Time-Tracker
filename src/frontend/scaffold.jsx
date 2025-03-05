@@ -4,7 +4,7 @@ import ManualTimer from './manual_timer';
 import ActiveTimer from './active_timer';
 import React, { useEffect, useState } from 'react';
 import { invoke } from '@forge/bridge';
-import TimeEntry from './models/time_entry';
+
 
 const containerStyles = xcss({
   backgroundColor: 'elevation.surface.raised',
@@ -20,11 +20,11 @@ const newContainer = xcss({
 });
 
 
-const Scaffold = ({ resetApiKey, user }) => {
+const Scaffold = ({ resetApiKey, activeTimer }) => {
   const { handleSubmit } = useForm();
   const [summary, setSummary] = useState('');
   const context = useProductContext();
-  const [activeTimer, setActiveTimer] = useState(null);
+
 
 
   useEffect(() => {
@@ -45,20 +45,10 @@ const Scaffold = ({ resetApiKey, user }) => {
     }
 
 
-    const fetchActiveTimer = async () => {
-      const result = await invoke('getRemoteActiveTimer', { 'user_id': user.id });
-      if (result.success) {
-        const activeTimer = result.activeTimer;
-        for (const timeEntry of activeTimer.time_entries) {
-          if (timeEntry.end_date === null) {
-            console.log('timeEntry', timeEntry);
-            setActiveTimer(new TimeEntry(timeEntry.id, timeEntry.project_id, timeEntry.start_date, timeEntry.end_date, timeEntry.description, timeEntry.tags));
-          }
-        }
-      }
-    };
-    fetchActiveTimer();
+   
   }, [context]);
+
+  console.log('activeTimer', activeTimer);
 
   const onResetApiKey = async (data) => {
     resetApiKey();
@@ -70,6 +60,8 @@ const Scaffold = ({ resetApiKey, user }) => {
   if (true) {
     homePage = ActiveTimer(summary);
   }
+
+  const url = siteUrl + '/time-tracker';
 
   return (
     <>
@@ -97,7 +89,7 @@ const Scaffold = ({ resetApiKey, user }) => {
       <Box padding='space.150'></Box>
       <Inline>
         <Box padding='space.100'></Box>
-        <Link href="https://teams.scrumlaunch.com/time-tracker" openNewTab={true}>Manage tracked time</Link>
+        <Link href={url} openNewTab={true}>Manage tracked time</Link>
       </Inline>
       <Form onSubmit={handleSubmit(onResetApiKey)}>
         <Inline>

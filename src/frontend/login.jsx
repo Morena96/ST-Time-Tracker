@@ -1,18 +1,21 @@
 import React, { useState } from 'react';
 import { Box, Inline, Text, Textfield, Button, Link, Form, useForm } from '@forge/react';
+import { siteUrl } from './utils/app_constants';
 
-const LoginPage = ({ checkApiKey }) => {
+const LoginPage = ({ fetchActiveTimer }) => {
     const { register, handleSubmit } = useForm();
 
     const [value, setValue] = useState('');
 
     const onSubmitApiKey = async (data) => {
-        var result = await checkApiKey(value);
+        var result = await fetchActiveTimer(value);
 
         if (!result) 
             setValue('');
         
     };
+
+    const url = siteUrl + '/profile';
 
     return (
         <Form onSubmit={handleSubmit(onSubmitApiKey)}>
@@ -31,7 +34,7 @@ const LoginPage = ({ checkApiKey }) => {
             <Box padding='space.050'></Box>
             <Inline>
                 <Box padding='space.200'></Box>
-                <Link href="https://teams.scrumlaunch.com/settings" openNewTab={true}>Get API key</Link>
+                <Link href={url} openNewTab={true}>Get API key</Link>
             </Inline>
         </Form>
     );
