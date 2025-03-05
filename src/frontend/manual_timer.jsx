@@ -1,6 +1,6 @@
 import ProjectDropdown from './widgets/project_dropdown';
 import TagMultiDropdown from './widgets/tag_multi_dropdown';
-import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss } from '@forge/react';
+import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss, useForm, Form } from '@forge/react';
 import React, { useState, useEffect } from 'react';
 import Divider from './widgets/divider';
 import { invoke } from '@forge/bridge';
@@ -29,6 +29,7 @@ const ManualTimer = ({ summary }) => {
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const { register, handleSubmit, formState } = useForm();
 
   useEffect(() => {
     setDescription(summary);
@@ -76,15 +77,21 @@ const ManualTimer = ({ summary }) => {
   }
 
   const changeStartDate = (e) => {
-    setStartDate(e.target.value);
+    if (/^[0-9]{0,4}$/.test(e.target.value)) {
+      setStartDate(e.target.value);
+    }
   }
 
   const changeEndDate = (e) => {
-    setEndDate(e.target.value);
+    if (/^[0-9]{0,4}$/.test(e.target.value)) {
+      setEndDate(e.target.value);
+    }
   }
 
   const changeDuration = (e) => {
-    setDuration(e.target.value);
+    if (/^[0-9]{0,6}$/.test(e.target.value)) {
+      setDuration(e.target.value);
+    }
   }
 
   const handleStartDateChange = (e) => {
@@ -207,69 +214,71 @@ const ManualTimer = ({ summary }) => {
   })
 
   return (
-    <Stack grow='fill'>
-      <Box padding='space.100'></Box>
+    <Form onSubmit={handleSubmit(addTimeEntry)}>
+      <Stack grow='fill'>
+        <Box padding='space.100'></Box>
 
-      <DescriptionField description={summary} setDescription={handleDescriptionChange} />
-      <Box padding='space.100'></Box>
-      <Textfield
-        maxLength={6}
-        onChange={changeDuration}
-        onFocus={onFocusDuration}
-        onBlur={handleDurationChange}
-        value={isDurationFocused?duration: formatIntToDuration(duration)}
-        type={isDurationFocused ? 'number' : 'text'}
-      />
+        <DescriptionField description={summary} setDescription={handleDescriptionChange} />
+        <Box padding='space.100'></Box>
+        
+        <Textfield
+          onChange={changeDuration}
+          onFocus={onFocusDuration}
+          onBlur={handleDurationChange}
+          value={isDurationFocused?duration: formatIntToDuration(duration)}
+        />
+         {formState.errors.durationTextfield && (
+          <ErrorMessage>Should not be empty</ErrorMessage>
+        )}
 
-      <Box padding='space.100'></Box>
-      <Inline space='space.050'>
-        <Box xcss={datePickerStyle}>
-          <DatePicker
-            defaultValue={formatDate(date)}
-            onChange={handleDateChange}
-            // dateFormat="YYYY-MM-DD"
-            minDate={formatDate(getLastUnlockedDate())}
-          />
-        </Box>
-        <Box xcss={rangeInputStyle}>
-          <Inline space='space.050'>
-            <Textfield
-              maxLength={4}
-              value={startDate}
-              onFocus={onFocusStartDate}
-              onChange={changeStartDate}
-              onBlur={handleStartDateChange}
-              type={isStartDateFocused ? 'number' : 'text'}
+        <Box padding='space.100'></Box>
+        <Inline space='space.050'>
+          <Box xcss={datePickerStyle}>
+            <DatePicker
+              value={formatDate(date)}
+              onChange={handleDateChange}
+              // dateFormat="YYYY-MM-DD"
+              minDate={formatDate(getLastUnlockedDate())}
             />
-            <Text> - </Text>
-            <Textfield
-              maxLength={4}
-              value={endDate}
-              onFocus={onFocusEndDate}
-              onChange={changeEndDate}
-              onBlur={handleEndDateChange}
-              type={isEndDateFocused ? 'number' : 'text'}
-            />
-          </Inline>
-        </Box>
-      </Inline>
+          </Box>
+          <Box xcss={rangeInputStyle}>
+            <Inline space='space.050'>
+              <Textfield
+                maxLength={4}
+                value={startDate}
+                onFocus={onFocusStartDate}
+                onChange={changeStartDate}
+                onBlur={handleStartDateChange}
+              />
+              <Text> - </Text>
+              <Textfield
+                maxLength={4}
+                value={endDate}
+                onFocus={onFocusEndDate}
+                onChange={changeEndDate}
+                onBlur={handleEndDateChange}
+              />
+            </Inline>
+          </Box>
+        </Inline>
 
-      <Box padding='space.100'></Box>
-      <Button appearance="primary" onClick={addTimeEntry}>
-        ADD TIME
-      </Button>
+        <Box padding='space.100'></Box>
+        <Button appearance="primary" type='submit'>
+          ADD TIME
+        </Button>
 
-      <Divider />
+        <Divider />
 
-      {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
-      {successMessage && <SuccessMessage message={successMessage} onClose={() => setSuccessMessage(null)} />}
+        {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
+        {successMessage && <SuccessMessage message={successMessage} onClose={() => setSuccessMessage(null)} />}
 
-      <Box padding='space.100'></Box>
-      <ProjectDropdown projects={projects} handleProjectChange={handleProjectChange} />
-      <Box padding='space.100'></Box>
-      <TagMultiDropdown tags={tags} handleTagsChange={handleTagsChange} />
-      <Box padding='space.100'></Box>
-    </Stack>
+        <Box padding='space.100'></Box>
+        <ProjectDropdown projects={projects} handleProjectChange={handleProjectChange} />
+        <Box padding='space.100'></Box>
+        <TagMultiDropdown tags={tags} handleTagsChange={handleTagsChange} />
+        <Box padding='space.100'></Box>
+      </Stack>
+    </Form>
   );
 };
 
