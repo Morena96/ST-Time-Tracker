@@ -4,7 +4,7 @@ import ManualTimer from './manual_timer';
 import ActiveTimer from './active_timer';
 import React, { useEffect, useState } from 'react';
 import { invoke } from '@forge/bridge';
-
+import { siteUrl } from './utils/app_constants';
 
 const containerStyles = xcss({
   backgroundColor: 'elevation.surface.raised',
@@ -57,7 +57,7 @@ const Scaffold = ({ resetApiKey, activeTimer }) => {
   let homePage = StartTimer();
 
 
-  if (false) {
+  if (true) {
     homePage = ActiveTimer(summary);
   }
 

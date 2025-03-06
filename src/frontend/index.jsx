@@ -15,8 +15,8 @@ const App = () => {
       const activeTimer = result.activeTimer;
       for (const timeEntry of activeTimer.time_entries) {
         if (timeEntry.end_date === null) {
-          console.log('timeEntry', timeEntry);
-          setActiveTimer(new TimeEntry(timeEntry.id, timeEntry.project_id, timeEntry.start_date, timeEntry.end_date, timeEntry.description, timeEntry.tags));
+          setActiveTimer(new TimeEntry(timeEntry.id, timeEntry.project.id, timeEntry.start_date, timeEntry.end_date, timeEntry.start_date, timeEntry.description, timeEntry.tags.split(',').map(tag => tag.trim())));
+          break;
         }
       }
     }else{
@@ -44,6 +44,8 @@ const App = () => {
 
     fetchApiKey();
   }, []);
+
+  console.log('activeTimer', activeTimer);
 
   if (isLoggedIn) {
     return <Scaffold resetApiKey={resetApiKey} activeTimer={activeTimer} />;
