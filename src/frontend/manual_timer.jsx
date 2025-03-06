@@ -1,6 +1,6 @@
 import ProjectDropdown from './widgets/project_dropdown';
 import TagMultiDropdown from './widgets/tag_multi_dropdown';
-import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss, useForm, Form } from '@forge/react';
+import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss, useForm, Form, LoadingButton } from '@forge/react';
 import React, { useState, useEffect } from 'react';
 import Divider from './widgets/divider';
 import { invoke } from '@forge/bridge';
@@ -187,15 +187,20 @@ const ManualTimer = ({ summary }) => {
       return;
     }
 
-    const timeEntry = new TimeEntry(null, projectId, startDate, endDate, date, description, selectedTags);
-    console.log('timeEntry', timeEntry);
+    const timeEntryJson = new TimeEntry(null, projectId, startDate, endDate, date, description, selectedTags).toJson();
 
     setIsLoading(true);
 
-    const result = await invoke('createTimeEntry', timeEntry.toJson());
-    console.log('result', result);
+    const result = await invoke('createTimeEntry', timeEntryJson);
 
     if (result.success) {
+      setStartDate(formatDateToHHMM(timeEntryJson.end_date));
+      setDate(timeEntryJson.end_date);
+      
+      const timeDiff =new Date(timeEntryJson.end_date) -new Date(timeEntryJson.start_date);
+      const newEndDate = new Date(timeEntryJson.end_date).getTime() + timeDiff;
+      setEndDate(formatDateToHHMM(new Date(newEndDate)));
+
       setSuccessMessage("Time entry has been created");
     } else {
       setErrorMessage(result.error);
@@ -263,9 +268,15 @@ const ManualTimer = ({ summary }) => {
         </Inline>
 
         <Box padding='space.100'></Box>
-        <Button appearance="primary" type='submit'>
-          ADD TIME
-        </Button>
+
+        {isLoading ? (
+          <LoadingButton appearance="primary" isLoading shouldFitContainer />
+        ) : (
+          <Button appearance="primary" type='submit'>
+            ADD TIME
+          </Button>
+        )}
+
 
         <Divider />
 

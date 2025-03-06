@@ -1,3 +1,7 @@
+import { SectionMessage, Text } from '@forge/react';
+import { useState, useEffect } from 'react';
+import React from 'react';
+
 const SuccessMessage = ({ message, onClose }) => {
     const [visible, setVisible] = useState(true);
 
