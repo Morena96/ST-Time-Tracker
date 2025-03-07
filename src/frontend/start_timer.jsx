@@ -11,7 +11,7 @@ const StartTimer = (onTimerStart) => {
   const _onTimerStart = async (data) => {
     const result =await onTimerStart();
 
-    if (result.error) {
+    if (!result.success) {
       setErrorMessage(result.error);
     }
   };

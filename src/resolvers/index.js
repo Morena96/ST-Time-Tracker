@@ -95,7 +95,7 @@ resolver.define('deleteLocalActiveTimer', async () => {
 //     const result = await fetch(`${baseUrl}/users/info`, {
 //       method: 'GET',
 //       headers: {
-//         'Authorization': `Bearer ${payload.apiKey}`,
+//         'HTTP-USER-TOKEN': payload.apiKey,
 //         'Content-Type': 'application/json; charset=UTF-8',
 //       }
 //     });
@@ -123,7 +123,7 @@ resolver.define('getProjects', async () => {
   const result = await fetch(`${baseUrl}/user_time_entries/projects`, {
     method: 'GET',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-USER-TOKEN': apiKey,
       'Content-Type': 'application/json; charset=UTF-8',
     }
   });
@@ -151,7 +151,7 @@ resolver.define('createTimeEntry', async ({ payload }) => {
   const result = await fetch(`${baseUrl}/user_time_entries`, {
     method: 'POST',
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
+      'HTTP-USER-TOKEN': apiKey,
       'Content-Type': 'application/json; charset=UTF-8',
     },
     body: JSON.stringify(payload)

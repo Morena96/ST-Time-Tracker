@@ -30,7 +30,6 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
   const [activeTimer, setActiveTimer] = useState(_activeTimer);
 
   useEffect(() => {
-
     if (context) {
       const fetchIssueData = async () => {
         const _issueKey = context?.extension?.issue?.key;
@@ -48,7 +47,6 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
 
     const fetchLocalActiveTimer = async () => {
       const result = await invoke('getLocalActiveTimer');
-      console.log('result', result);
       if (result.timeEntry) {
         if (!activeTimer || result.timeEntry.id !== activeTimer.id) {
           await invoke('deleteLocalActiveTimer');
@@ -85,13 +83,11 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
     }
   };
 
-  let homePage = StartTimer(onTimerStart);
+  console.log('localActiveTimer', localActiveTimer);
+  console.log('activeTimer', activeTimer);
 
-
-  if (localActiveTimer && activeTimer && localActiveTimer.id === activeTimer.id && localActiveTimer.kanban_board_id === issueKey) {
-    homePage = ActiveTimer(summary);
-  }
-
+  var isTimerActive = localActiveTimer && activeTimer && localActiveTimer.id === activeTimer.id && localActiveTimer.kanban_board_id === issueKey
+  
   const url = siteUrl + '/time-tracker';
 
   return (
@@ -106,7 +102,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
                 <Box xcss={newContainer}> <Tab> <Inline alignInline='center'> Manual </Inline> </Tab></Box>
               </TabList>
               <TabPanel>
-                {homePage}
+              {isTimerActive ? <ActiveTimer summary={summary} /> : <StartTimer onTimerStart={onTimerStart} />}
               </TabPanel>
               <TabPanel>
                 <ManualTimer summary={summary} />

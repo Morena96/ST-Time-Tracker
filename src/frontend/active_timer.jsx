@@ -6,11 +6,9 @@ import ProjectDropdown from './widgets/project_dropdown';
 import TagMultiDropdown from './widgets/tag_multi_dropdown';
 import Divider from './widgets/divider';
 import DescriptionField from './widgets/description_field';
-import { Stack, Box, Button, useForm, Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader, Text, Strong } from '@forge/react';
+import { Stack, Box, Button, Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader, Text, Strong } from '@forge/react';
 
 const ActiveTimer = (summary ) => {
-  const { handleSubmit } = useForm();
-
   const [projects, setProjects] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const closeModal = () => setIsOpen(false);
@@ -58,7 +56,7 @@ const ActiveTimer = (summary ) => {
 
       <Box padding='space.100'></Box>
 
-      <Button type='submit' appearance="danger" shouldFitContainer onClick={handleSubmit(onStopTimer)}>
+      <Button type='submit' appearance="danger" shouldFitContainer onClick={onStopTimer}>
         STOP TIMER
       </Button>
 
