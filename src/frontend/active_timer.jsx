@@ -8,11 +8,16 @@ import Divider from './widgets/divider';
 import DescriptionField from './widgets/description_field';
 import { Stack, Box, Button, Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader, Text, Strong } from '@forge/react';
 
-const ActiveTimer = (summary ) => {
+
+const ActiveTimer = ({ activeTimer }) => {
   const [projects, setProjects] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const closeModal = () => setIsOpen(false);
   const onDiscardTimer = () => setIsOpen(true);
+  const [description, setDescription] = useState(activeTimer.description);
+  const [selectedProject, setSelectedProject] = useState(activeTimer.project);
+  const [selectedTags, setSelectedTags] = useState(activeTimer.tags);
+
 
   const tags = Tag.tags;
 
@@ -39,7 +44,7 @@ const ActiveTimer = (summary ) => {
     console.log('tags', tags);
   };
 
-  const setDescription = (description) => {
+  const handleDescriptionChange = (description) => {
     console.log('description', description);
   };
 
@@ -52,7 +57,7 @@ const ActiveTimer = (summary ) => {
 
       <Box padding='space.100'></Box>
 
-      <DescriptionField description={summary} setDescription={setDescription} />
+      <DescriptionField description={description} setDescription={handleDescriptionChange} />
 
       <Box padding='space.100'></Box>
 
@@ -92,9 +97,9 @@ const ActiveTimer = (summary ) => {
 
       <Divider />
 
-      <ProjectDropdown projects={projects} handleProjectChange={handleProjectChange} />
+      <ProjectDropdown projects={projects} handleProjectChange={handleProjectChange} selectedProject={selectedProject} />
       <Box padding='space.100'></Box>
-      <TagMultiDropdown tags={tags} handleTagsChange={handleTagsChange} />
+      <TagMultiDropdown tags={tags} handleTagsChange={handleTagsChange} selectedTags={selectedTags} />
       <Box padding='space.100'></Box>
 
     </Stack>

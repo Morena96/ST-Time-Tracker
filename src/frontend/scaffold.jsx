@@ -7,6 +7,8 @@ import { invoke } from '@forge/bridge';
 import { siteUrl } from './utils/app_constants';
 import TimeEntry from './models/time_entry';
 import { formatDateToHHMM } from './utils/timeUtils';
+import Loader from './widgets/loader';
+
 const containerStyles = xcss({
   backgroundColor: 'elevation.surface.raised',
   boxShadow: 'elevation.shadow.raised',
@@ -28,6 +30,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
   const [localActiveTimer, setLocalActiveTimer] = useState(null);
   const [issueKey, setIssueKey] = useState(null);
   const [activeTimer, setActiveTimer] = useState(_activeTimer);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     if (context) {
@@ -46,14 +49,16 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
     }
 
     const fetchLocalActiveTimer = async () => {
+      setIsLoading(true);
       const result = await invoke('getLocalActiveTimer');
       if (result.timeEntry) {
         if (!activeTimer || result.timeEntry.id !== activeTimer.id) {
           await invoke('deleteLocalActiveTimer');
-        }else{
+        } else {
           setLocalActiveTimer(result.timeEntry);
         }
       }
+      setIsLoading(false);
     };
 
     fetchLocalActiveTimer();
@@ -83,12 +88,13 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
     }
   };
 
-  console.log('localActiveTimer', localActiveTimer);
-  console.log('activeTimer', activeTimer);
-
   var isTimerActive = localActiveTimer && activeTimer && localActiveTimer.id === activeTimer.id && localActiveTimer.kanban_board_id === issueKey
-  
+
   const url = siteUrl + '/time-tracker';
+
+  if (isLoading) {
+    return <Loader />;
+  }
 
   return (
     <>
@@ -102,7 +108,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
                 <Box xcss={newContainer}> <Tab> <Inline alignInline='center'> Manual </Inline> </Tab></Box>
               </TabList>
               <TabPanel>
-              {isTimerActive ? <ActiveTimer summary={summary} /> : <StartTimer onTimerStart={onTimerStart} />}
+                {isTimerActive ? <ActiveTimer activeTimer={activeTimer} /> : <StartTimer onTimerStart={onTimerStart} />}
               </TabPanel>
               <TabPanel>
                 <ManualTimer summary={summary} />

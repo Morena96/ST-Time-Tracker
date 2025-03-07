@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import ForgeReconciler, { Box, Spinner, Stack } from '@forge/react';
+import ForgeReconciler from '@forge/react';
 import { invoke } from '@forge/bridge';
 import LoginPage from './login';
 import Scaffold from './scaffold';
 import TimeEntry from './models/time_entry';
+import Loader from './widgets/loader';
 
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
@@ -52,11 +53,7 @@ const App = () => {
   } else if (isLoggedIn === false) {
     return <LoginPage fetchActiveTimer={fetchActiveTimer} />;
   } else {
-    return <Stack alignInline="center" grow='fill'>
-      <Box padding='space.200'></Box>
-      <Spinner size="medium" label="loading" />
-      <Box padding='space.200'></Box>
-    </Stack>
+    return <Loader />
   }
 };
 
