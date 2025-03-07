@@ -5,7 +5,8 @@ import ActiveTimer from './active_timer';
 import React, { useEffect, useState } from 'react';
 import { invoke } from '@forge/bridge';
 import { siteUrl } from './utils/app_constants';
-
+import TimeEntry from './models/time_entry';
+import { formatDateToHHMM } from './utils/timeUtils';
 const containerStyles = xcss({
   backgroundColor: 'elevation.surface.raised',
   boxShadow: 'elevation.shadow.raised',
@@ -20,22 +21,23 @@ const newContainer = xcss({
 });
 
 
-const Scaffold = ({ resetApiKey, activeTimer }) => {
+const Scaffold = ({ resetApiKey, _activeTimer }) => {
   const { handleSubmit } = useForm();
   const [summary, setSummary] = useState('');
   const context = useProductContext();
-
-
+  const [localActiveTimer, setLocalActiveTimer] = useState(null);
+  const [issueKey, setIssueKey] = useState(null);
+  const [activeTimer, setActiveTimer] = useState(_activeTimer);
 
   useEffect(() => {
 
     if (context) {
       const fetchIssueData = async () => {
-        const issueKey = context?.extension?.issue?.key;
-
-        const result = await invoke('getIssueData', { 'issueKey': issueKey });
+        const _issueKey = context?.extension?.issue?.key;
+        setIssueKey(_issueKey);
+        const result = await invoke('getIssueData', { 'issueKey': _issueKey });
         if (result.success) {
-          setSummary('[' + issueKey + ']: ' + result.data.fields.summary);
+          setSummary('[' + _issueKey + ']: ' + result.data.fields.summary);
         } else {
           console.log('result', result);
         }
@@ -44,20 +46,49 @@ const Scaffold = ({ resetApiKey, activeTimer }) => {
       fetchIssueData();
     }
 
+    const fetchLocalActiveTimer = async () => {
+      const result = await invoke('getLocalActiveTimer');
+      console.log('result', result);
+      if (result.timeEntry) {
+        if (!activeTimer || result.timeEntry.id !== activeTimer.id) {
+          await invoke('deleteLocalActiveTimer');
+        }else{
+          setLocalActiveTimer(result.timeEntry);
+        }
+      }
+    };
 
-   
+    fetchLocalActiveTimer();
   }, [context]);
-
-  console.log('activeTimer', activeTimer);
 
   const onResetApiKey = async (data) => {
     resetApiKey();
   };
 
-  let homePage = StartTimer();
+  const onTimerStart = async () => {
+    const date = new Date();
+
+    const result = await invoke('createTimeEntry', new TimeEntry(null, null, formatDateToHHMM(date), null, date, summary, null, issueKey).toJson());
 
 
-  if (true) {
+    if (result.success) {
+      console.log('timeEntry', result.timeEntry);
+      const timeEntry = new TimeEntry(result.timeEntry.id, result.timeEntry.project_id, result.timeEntry.start_date, result.timeEntry.end_date, result.timeEntry.date, result.timeEntry.description, result.timeEntry.tags, issueKey);
+      await invoke('setLocalActiveTimer', { 'timeEntry': timeEntry });
+      setLocalActiveTimer(timeEntry);
+      setActiveTimer(timeEntry);
+      return { success: true, timeEntry: timeEntry };
+
+    }
+    else {
+      return { success: false, error: result.error };
+    }
+  };
+
+  let homePage = StartTimer(onTimerStart);
+
+
+  if (localActiveTimer && activeTimer && localActiveTimer.id === activeTimer.id && localActiveTimer.kanban_board_id === issueKey) {
     homePage = ActiveTimer(summary);
   }
 

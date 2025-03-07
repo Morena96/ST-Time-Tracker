@@ -1,17 +1,19 @@
 import React from 'react';
 import { Box, Stack, Heading, xcss,useForm,Button,Inline } from "@forge/react";
+import {useState} from 'react';
+import ErrorMessage from './widgets/error_message';
 
-
-const containerStyles = xcss({
-  backgroundColor: 'color.background.discovery',
-});
-
-const StartTimer = () => {
+const StartTimer = (onTimerStart) => {
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const { handleSubmit } = useForm();
 
-  const onTimerStart = async (data) => {
-    console.log('timer start');
+  const _onTimerStart = async (data) => {
+    const result =await onTimerStart();
+
+    if (result.error) {
+      setErrorMessage(result.error);
+    }
   };
 
   return (
@@ -20,10 +22,14 @@ const StartTimer = () => {
       <Heading as="h2">00:00:00</Heading>
       <Box padding='space.200'></Box>
 
-      <Button type='submit' appearance="primary" shouldFitContainer onClick={handleSubmit(onTimerStart)}>
+      <Button type='submit' appearance="primary" shouldFitContainer onClick={handleSubmit(_onTimerStart)}>
         START TIMER
       </Button>
       <Box padding='space.050'></Box>
+
+      {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
+      {errorMessage && <Box padding='space.050'></Box>}
+
     </Stack>
   );
 };

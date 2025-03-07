@@ -26,7 +26,7 @@ resolver.define('storeApiKey', async ({ payload }) => {
   return { success: true };
 });
 
-resolver.define('getApiKey', async ({ payload }) => {
+resolver.define('getApiKey', async () => {
   try {
     const apiKey = await storage.get('apiKey');
     return { apiKey };
@@ -39,8 +39,6 @@ resolver.define('getRemoteActiveTimer', async ({ payload }) => {
   const apiKey = payload.apiKey;
   const time_zone = getTimezoneOffsetInHours();
   const url = `${baseUrl}/user_time_entries?page=1&limit=25&order_by=time&sort_to=desc&time_zone=${time_zone}`;
-
-  console.log('url', url);
 
   const result = await fetch(url, {
     method: 'GET',
@@ -74,6 +72,22 @@ resolver.define('getRemoteActiveTimer', async ({ payload }) => {
   } else {
     return { success: result.ok, error: error };
   }
+});
+
+resolver.define('getLocalActiveTimer', async () => {
+  const timeEntry = await storage.get('timeEntry');
+
+  return { success: true, timeEntry: timeEntry };
+});
+
+resolver.define('setLocalActiveTimer', async ({ payload }) => {
+  const result = await storage.set('timeEntry', payload.timeEntry);
+  return { success: true };
+});
+
+resolver.define('deleteLocalActiveTimer', async () => {
+  await storage.delete('timeEntry');
+  return { success: true };
 });
 
 // resolver.define('checkApiKey', async ({ payload }) => {
@@ -121,12 +135,6 @@ resolver.define('getProjects', async () => {
   return { success: true, projects: projectsDict.projects };
 });
 
-resolver.define('startTimer', async (req) => {
-  const timestamp = Date.now();
-  await storage.set('timerStart', timestamp);
-  return { timestamp };
-});
-
 resolver.define('stopActiveTimer', async () => {
   const startTime = await storage.get('timerStart');
   const endTime = Date.now();
@@ -136,8 +144,10 @@ resolver.define('stopActiveTimer', async () => {
 });
 
 resolver.define('createTimeEntry', async ({ payload }) => {
-  const apiKey = await storage.get('apiKey');
   console.log('payload', payload);
+
+  const apiKey = await storage.get('apiKey');
+
   const result = await fetch(`${baseUrl}/user_time_entries`, {
     method: 'POST',
     headers: {
@@ -158,7 +168,7 @@ resolver.define('createTimeEntry', async ({ payload }) => {
     }
   }
 
-  return { success: result.ok, error: error };
+  return { success: result.ok, error: error, timeEntry:await result.json() };
 });
 
 resolver.define('getActiveTimer', async () => {
