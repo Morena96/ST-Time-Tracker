@@ -85,10 +85,6 @@ resolver.define('setLocalActiveTimer', async ({ payload }) => {
   return { success: true };
 });
 
-resolver.define('deleteLocalActiveTimer', async () => {
-  await storage.delete('timeEntry');
-  return { success: true };
-});
 
 // resolver.define('checkApiKey', async ({ payload }) => {
 //   try {
@@ -168,11 +164,13 @@ resolver.define('createTimeEntry', async ({ payload }) => {
     }
   }
 
-  return { success: result.ok, error: error, timeEntry:await result.json() };
+  return { success: result.ok, error: error, timeEntry: await result.json() };
 });
 
 resolver.define('updateTimeEntry', async ({ payload }) => {
-  const result = await fetch(`${baseUrl}/user_time_entries/${payload.id}`, {
+  console.log('payload', payload);
+  const apiKey = await storage.get('apiKey');
+  const result = await fetch(`${baseUrl}/user_time_entries/${payload.timeEntryId}`, {
     method: 'PUT',
     headers: {
       'HTTP-USER-TOKEN': apiKey,
@@ -197,12 +195,34 @@ resolver.define('updateTimeEntry', async ({ payload }) => {
 });
 
 
-resolver.define('deleteActiveTimer', async () => {
-  await storage.delete('timerStart');
-  await storage.delete('timerDescription');
-  await storage.delete('timerTag');
-  await storage.delete('timerProject');
+resolver.define('deleteLocalActiveTimer', async () => {
+  await storage.delete('timeEntry');
   return { success: true };
+});
+
+resolver.define('deleteActiveTimer', async ({ payload }) => {
+  const apiKey = await storage.get('apiKey');
+  const result = await fetch(`${baseUrl}/user_time_entries/${payload.timeEntryId}`, {
+    method: 'DELETE',
+    headers: {
+      'HTTP-USER-TOKEN': apiKey,
+      'Content-Type': 'application/json; charset=UTF-8',
+    }
+  });
+
+  var error = null;
+
+  if (!result.ok) {
+    const errorText = await result.text();
+    try {
+      const errorJson = JSON.parse(errorText);
+      error = errorJson.errors;
+    } catch {
+      error = errorText;
+    }
+  }
+
+  return { success: result.ok, error: error };
 });
 
 

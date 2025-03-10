@@ -41,6 +41,7 @@ const ManualTimer = ({ summary }) => {
       const result = await invoke('getProjects');
       if (result.success) {
         const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
+        projectsList.sort((a, b) => a.name.localeCompare(b.name));
         setProjects(projectsList);
       } else {
         console.error('Error fetching projects ', result.error);
@@ -70,7 +71,7 @@ const ManualTimer = ({ summary }) => {
     setIsEndDateFocused(true);
     setEndDate(timeStringToNumberString(endDate));
   }
-  
+
   const onFocusDuration = (e) => {
     setIsDurationFocused(true);
     setDuration(durationToNumberString(Duration.fromSeconds(duration).toString()));
@@ -175,14 +176,14 @@ const ManualTimer = ({ summary }) => {
       errorMsg = ' project';
     }
 
-    if(description.length === 0) {
-      if(errorMsg.length > 0) {
+    if (description.length === 0) {
+      if (errorMsg.length > 0) {
         errorMsg += ',';
       }
       errorMsg += ' description';
     }
 
-    if(errorMsg.length > 0) {
+    if (errorMsg.length > 0) {
       setErrorMessage("Can't save, fields missing:" + errorMsg);
       return;
     }
@@ -196,8 +197,8 @@ const ManualTimer = ({ summary }) => {
     if (result.success) {
       setStartDate(formatDateToHHMM(timeEntryJson.end_date));
       setDate(timeEntryJson.end_date);
-      
-      const timeDiff =new Date(timeEntryJson.end_date) -new Date(timeEntryJson.start_date);
+
+      const timeDiff = new Date(timeEntryJson.end_date) - new Date(timeEntryJson.start_date);
       const newEndDate = new Date(timeEntryJson.end_date).getTime() + timeDiff;
       setEndDate(formatDateToHHMM(new Date(newEndDate)));
 
@@ -225,14 +226,14 @@ const ManualTimer = ({ summary }) => {
 
         <DescriptionField description={summary} setDescription={handleDescriptionChange} />
         <Box padding='space.100'></Box>
-        
+
         <Textfield
           onChange={changeDuration}
           onFocus={onFocusDuration}
           onBlur={handleDurationChange}
-          value={isDurationFocused?duration: formatIntToDuration(duration)}
+          value={isDurationFocused ? duration : formatIntToDuration(duration)}
         />
-         {formState.errors.durationTextfield && (
+        {formState.errors.durationTextfield && (
           <ErrorMessage>Should not be empty</ErrorMessage>
         )}
 

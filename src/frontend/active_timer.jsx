@@ -6,64 +6,81 @@ import ProjectDropdown from './widgets/project_dropdown';
 import TagMultiDropdown from './widgets/tag_multi_dropdown';
 import Divider from './widgets/divider';
 import DescriptionField from './widgets/description_field';
-import { Stack, Box, Button, Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader, Text, Strong } from '@forge/react';
+import { Stack, Box, Button, Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader, Text, Strong, Heading, Inline } from '@forge/react';
 import { formatIntToDuration } from './utils/timeUtils';
+import ErrorMessage from './widgets/error_message';
 
 
-const ActiveTimer = ({ activeTimer, onTimerStop }) => {
+const ActiveTimer = ({ activeTimer, onTimerStop, onDiscarded }) => {
   const [projects, setProjects] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
-  const closeModal = () => setIsOpen(false);
+  const closeModal = (isConfirmed) => {
+    setIsOpen(false);
+    if (isConfirmed) {
+      onDiscarded();
+    }
+  };
   const onDiscardTimer = () => setIsOpen(true);
   const [description, setDescription] = useState(activeTimer.description);
-  const [selectedProject, setSelectedProject] = useState(activeTimer.project);
+  const [selectedProject, setSelectedProject] = useState(activeTimer.project_id);
   const [selectedTags, setSelectedTags] = useState(activeTimer.tags);
   const [duration, setDuration] = useState(0);
+  const [errorMessage, setErrorMessage] = useState(null);
   const tags = Tag.tags;
 
   useEffect(() => {
-    const diffInMs = new Date().getTime() - activeTimer.startDate.getTime();
+    console.log('start date', activeTimer.start_date);
+    const diffInMs = new Date().getTime() - new Date(activeTimer.start_date).getTime();
     const diffInSeconds = Math.floor(diffInMs / 1000);
     setDuration(diffInSeconds);
+
+    // Add interval to update duration every second
+    const intervalId = setInterval(() => {
+      setDuration(prev => prev + 1);
+    }, 1000);
 
     const fetchProjects = async () => {
       const result = await invoke('getProjects');
       if (result.success) {
         const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
+        projectsList.sort((a, b) => a.name.localeCompare(b.name));
         setProjects(projectsList);
       } else {
         console.error('Error fetching projects ', result.error);
       }
     };
     fetchProjects();
+
+    // Cleanup interval on component unmount
+    return () => clearInterval(intervalId);
   }, []);
 
 
 
   const handleProjectChange = async (projectId) => {
-    const result = await invoke('updateTimeEntry', activeTimer.id, { projectId });
+    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'project_id': projectId });
     if (result.success) {
       setSelectedProject(projectId);
     } else {
-      console.error('Error updating project ', result.error);
+      setErrorMessage(result.error);
     }
   };
 
   const handleTagsChange = async (tags) => {
-    const result = await invoke('updateTimeEntry', activeTimer.id, { tags });
+    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'tags': tags });
     if (result.success) {
       setSelectedTags(tags);
     } else {
-      console.error('Error updating tags ', result.error);
+      setErrorMessage(result.error);
     }
   };
 
   const handleDescriptionChange = async (description) => {
-    const result = await invoke('updateTimeEntry', activeTimer.id, { description });
+    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'description': description });
     if (result.success) {
       setDescription(description);
     } else {
-      console.error('Error updating description ', result.error);
+      setErrorMessage(result.error);
     }
   };
 
@@ -75,7 +92,9 @@ const ActiveTimer = ({ activeTimer, onTimerStop }) => {
       <DescriptionField description={description} setDescription={handleDescriptionChange} />
 
       <Box padding='space.200'></Box>
-      <Heading as="h2">{formatIntToDuration(duration)}</Heading>
+      <Inline alignInline='center'>
+        <Heading as="h2">{formatIntToDuration(duration)}</Heading>
+      </Inline>
       <Box padding='space.200'></Box>
 
 
@@ -85,7 +104,7 @@ const ActiveTimer = ({ activeTimer, onTimerStop }) => {
 
       <ModalTransition>
         {isOpen && (
-          <Modal onClose={closeModal}>
+          <Modal onClose={() => closeModal(false)}>
             <ModalHeader>
               <ModalTitle>Discard Entry</ModalTitle>
             </ModalHeader>
@@ -95,10 +114,10 @@ const ActiveTimer = ({ activeTimer, onTimerStop }) => {
               </Text>
             </ModalBody>
             <ModalFooter>
-              <Button appearance="subtle" onClick={closeModal}>
+              <Button appearance="subtle" onClick={() => closeModal(false)}>
                 Cancel
               </Button>
-              <Button appearance="primary" onClick={closeModal}>
+              <Button appearance="primary" onClick={() => closeModal(true)}>
                 Discard
               </Button>
             </ModalFooter>
@@ -115,7 +134,11 @@ const ActiveTimer = ({ activeTimer, onTimerStop }) => {
 
       <Divider />
 
-      <ProjectDropdown projects={projects} handleProjectChange={handleProjectChange} selectedProject={selectedProject} />
+      {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
+
+      <Box padding='space.100'></Box>
+
+      <ProjectDropdown projects={projects} handleProjectChange={handleProjectChange} selectedProjectId={selectedProject} />
       <Box padding='space.100'></Box>
       <TagMultiDropdown tags={tags} handleTagsChange={handleTagsChange} selectedTags={selectedTags} />
       <Box padding='space.100'></Box>

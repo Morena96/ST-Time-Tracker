@@ -1,10 +1,15 @@
-import { Select, Stack, Label, RequiredAsterisk, Heading,Box } from '@forge/react';
+import { Select, Stack, Label, RequiredAsterisk, Heading, Box } from '@forge/react';
 import React from 'react';
 
-const ProjectDropdown = ({ projects, handleProjectChange, selectedProject }) => {
-
+const ProjectDropdown = ({ projects, handleProjectChange, selectedProjectId }) => {
     const onChange = (e) => {
         handleProjectChange(e.value);
+    }
+
+    var selectedProject = null;
+
+    if (selectedProjectId) {
+        selectedProject = projects.find(p => p.id === selectedProjectId);
     }
 
     return (
@@ -16,7 +21,7 @@ const ProjectDropdown = ({ projects, handleProjectChange, selectedProject }) => 
                 options={projects.map(project => ({ label: project.name, value: project.id }))}
                 onChange={onChange}
                 placeholder="Select a project"
-                value={selectedProject}
+                value={selectedProject ? { label: selectedProject.name, value: selectedProject.id } : null}
             />
         </Stack>
     );

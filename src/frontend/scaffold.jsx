@@ -96,7 +96,19 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
       console.error('Error stopping timer ', result.error);
     }
   };
-  
+
+  const onDiscarded = async () => {
+    const result = await invoke('deleteActiveTimer', { 'timeEntryId': localActiveTimer.id });
+
+    if (result.success) {
+      await invoke('deleteLocalActiveTimer');
+      setLocalActiveTimer(null);
+      setActiveTimer(null);
+    } else {
+      console.error('Error deleting local active timer ', result.error);
+    }
+  };
+
   var isTimerActive = localActiveTimer && activeTimer && localActiveTimer.id === activeTimer.id && localActiveTimer.kanban_board_id === issueKey
 
   const url = siteUrl + '/time-tracker';
@@ -117,7 +129,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
                 <Box xcss={newContainer}> <Tab> <Inline alignInline='center'> Manual </Inline> </Tab></Box>
               </TabList>
               <TabPanel>
-                {isTimerActive ? <ActiveTimer activeTimer={activeTimer} onTimerStop={onTimerStop} /> : <StartTimer onTimerStart={onTimerStart} />}
+                {isTimerActive ? <ActiveTimer activeTimer={activeTimer} onTimerStop={onTimerStop} onDiscarded={onDiscarded} /> : <StartTimer onTimerStart={onTimerStart} />}
               </TabPanel>
               <TabPanel>
                 <ManualTimer summary={summary} />
