@@ -7,9 +7,10 @@ import TagMultiDropdown from './widgets/tag_multi_dropdown';
 import Divider from './widgets/divider';
 import DescriptionField from './widgets/description_field';
 import { Stack, Box, Button, Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader, Text, Strong } from '@forge/react';
+import { formatIntToDuration } from './utils/timeUtils';
 
 
-const ActiveTimer = ({ activeTimer }) => {
+const ActiveTimer = ({ activeTimer, onTimerStop }) => {
   const [projects, setProjects] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const closeModal = () => setIsOpen(false);
@@ -17,11 +18,14 @@ const ActiveTimer = ({ activeTimer }) => {
   const [description, setDescription] = useState(activeTimer.description);
   const [selectedProject, setSelectedProject] = useState(activeTimer.project);
   const [selectedTags, setSelectedTags] = useState(activeTimer.tags);
-
-
+  const [duration, setDuration] = useState(0);
   const tags = Tag.tags;
 
   useEffect(() => {
+    const diffInMs = new Date().getTime() - activeTimer.startDate.getTime();
+    const diffInSeconds = Math.floor(diffInMs / 1000);
+    setDuration(diffInSeconds);
+
     const fetchProjects = async () => {
       const result = await invoke('getProjects');
       if (result.success) {
@@ -36,20 +40,31 @@ const ActiveTimer = ({ activeTimer }) => {
 
 
 
-  const handleProjectChange = (projectId) => {
-    console.log('projectId', projectId);
+  const handleProjectChange = async (projectId) => {
+    const result = await invoke('updateTimeEntry', activeTimer.id, { projectId });
+    if (result.success) {
+      setSelectedProject(projectId);
+    } else {
+      console.error('Error updating project ', result.error);
+    }
   };
 
-  const handleTagsChange = (tags) => {
-    console.log('tags', tags);
+  const handleTagsChange = async (tags) => {
+    const result = await invoke('updateTimeEntry', activeTimer.id, { tags });
+    if (result.success) {
+      setSelectedTags(tags);
+    } else {
+      console.error('Error updating tags ', result.error);
+    }
   };
 
-  const handleDescriptionChange = (description) => {
-    console.log('description', description);
-  };
-
-  const onStopTimer = () => {
-    console.log('stop timer');
+  const handleDescriptionChange = async (description) => {
+    const result = await invoke('updateTimeEntry', activeTimer.id, { description });
+    if (result.success) {
+      setDescription(description);
+    } else {
+      console.error('Error updating description ', result.error);
+    }
   };
 
   return (
@@ -59,9 +74,12 @@ const ActiveTimer = ({ activeTimer }) => {
 
       <DescriptionField description={description} setDescription={handleDescriptionChange} />
 
-      <Box padding='space.100'></Box>
+      <Box padding='space.200'></Box>
+      <Heading as="h2">{formatIntToDuration(duration)}</Heading>
+      <Box padding='space.200'></Box>
 
-      <Button type='submit' appearance="danger" shouldFitContainer onClick={onStopTimer}>
+
+      <Button type='submit' appearance="danger" shouldFitContainer onClick={onTimerStop}>
         STOP TIMER
       </Button>
 

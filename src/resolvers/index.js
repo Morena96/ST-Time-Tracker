@@ -171,27 +171,31 @@ resolver.define('createTimeEntry', async ({ payload }) => {
   return { success: result.ok, error: error, timeEntry:await result.json() };
 });
 
-resolver.define('getActiveTimer', async () => {
-  const timerStart = await storage.get('timerStart');
-  return { isRunning: !!timerStart, startTime: timerStart };
+resolver.define('updateTimeEntry', async ({ payload }) => {
+  const result = await fetch(`${baseUrl}/user_time_entries/${payload.id}`, {
+    method: 'PUT',
+    headers: {
+      'HTTP-USER-TOKEN': apiKey,
+      'Content-Type': 'application/json; charset=UTF-8',
+    },
+    body: JSON.stringify(payload)
+  });
+
+  var error = null;
+
+  if (!result.ok) {
+    const errorText = await result.text();
+    try {
+      const errorJson = JSON.parse(errorText);
+      error = errorJson.errors;
+    } catch {
+      error = errorText;
+    }
+  }
+
+  return { success: result.ok, error: error };
 });
 
-
-
-resolver.define('changeTimerDescription', async ({ payload }) => {
-  await storage.set('timerDescription', payload.description);
-  return { success: true };
-});
-
-resolver.define('changeTimerTag', async ({ payload }) => {
-  await storage.set('timerTag', payload.tag);
-  return { success: true };
-});
-
-resolver.define('changeTimerProject', async ({ payload }) => {
-  await storage.set('timerProject', payload.project);
-  return { success: true };
-});
 
 resolver.define('deleteActiveTimer', async () => {
   await storage.delete('timerStart');

@@ -70,7 +70,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
 
   const onTimerStart = async () => {
     const date = new Date();
-
+    console.log('onTimerStart', date);
     const result = await invoke('createTimeEntry', new TimeEntry(null, null, formatDateToHHMM(date), null, date, summary, null, issueKey).toJson());
 
 
@@ -88,6 +88,15 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
     }
   };
 
+  const onTimerStop = async () => {
+    const result = await invoke('stopTimeEntry', activeTimer.id);
+    if (result.success) {
+      setActiveTimer(null);
+    } else {
+      console.error('Error stopping timer ', result.error);
+    }
+  };
+  
   var isTimerActive = localActiveTimer && activeTimer && localActiveTimer.id === activeTimer.id && localActiveTimer.kanban_board_id === issueKey
 
   const url = siteUrl + '/time-tracker';
@@ -108,7 +117,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
                 <Box xcss={newContainer}> <Tab> <Inline alignInline='center'> Manual </Inline> </Tab></Box>
               </TabList>
               <TabPanel>
-                {isTimerActive ? <ActiveTimer activeTimer={activeTimer} /> : <StartTimer onTimerStart={onTimerStart} />}
+                {isTimerActive ? <ActiveTimer activeTimer={activeTimer} onTimerStop={onTimerStop} /> : <StartTimer onTimerStart={onTimerStart} />}
               </TabPanel>
               <TabPanel>
                 <ManualTimer summary={summary} />

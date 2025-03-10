@@ -1,15 +1,16 @@
 import React from 'react';
-import { Box, Stack, Heading, xcss,useForm,Button,Inline } from "@forge/react";
+import { Box, Stack, Heading, xcss, useForm, Button, Inline } from "@forge/react";
 import {useState} from 'react';
 import ErrorMessage from './widgets/error_message';
 
-const StartTimer = (onTimerStart) => {
+const StartTimer = ({ onTimerStart }) => {
   const [errorMessage, setErrorMessage] = useState(null);
 
   const { handleSubmit } = useForm();
 
   const _onTimerStart = async (data) => {
-    const result =await onTimerStart();
+    console.log('onTimerStart', data);
+    const result = await onTimerStart();
 
     if (!result.success) {
       setErrorMessage(result.error);
