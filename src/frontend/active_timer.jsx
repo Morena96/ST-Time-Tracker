@@ -7,8 +7,8 @@ import TagMultiDropdown from './widgets/tag_multi_dropdown';
 import Divider from './widgets/divider';
 import DescriptionField from './widgets/description_field';
 import { Stack, Box, Button, Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader, Text, Strong, Heading, Inline } from '@forge/react';
-import { formatIntToDuration } from './utils/timeUtils';
 import ErrorMessage from './widgets/error_message';
+import ActiveDuration from './widgets/active_duration';
 
 
 const ActiveTimer = ({ activeTimer, onTimerStop, onDiscarded }) => {
@@ -24,21 +24,10 @@ const ActiveTimer = ({ activeTimer, onTimerStop, onDiscarded }) => {
   const [description, setDescription] = useState(activeTimer.description);
   const [selectedProject, setSelectedProject] = useState(activeTimer.project_id);
   const [selectedTags, setSelectedTags] = useState(activeTimer.tags);
-  const [duration, setDuration] = useState(0);
   const [errorMessage, setErrorMessage] = useState(null);
   const tags = Tag.tags;
 
   useEffect(() => {
-    console.log('start date', activeTimer.start_date);
-    const diffInMs = new Date().getTime() - new Date(activeTimer.start_date).getTime();
-    const diffInSeconds = Math.floor(diffInMs / 1000);
-    setDuration(diffInSeconds);
-
-    // Add interval to update duration every second
-    const intervalId = setInterval(() => {
-      setDuration(prev => prev + 1);
-    }, 1000);
-
     const fetchProjects = async () => {
       const result = await invoke('getProjects');
       if (result.success) {
@@ -50,9 +39,6 @@ const ActiveTimer = ({ activeTimer, onTimerStop, onDiscarded }) => {
       }
     };
     fetchProjects();
-
-    // Cleanup interval on component unmount
-    return () => clearInterval(intervalId);
   }, []);
 
 
@@ -91,12 +77,7 @@ const ActiveTimer = ({ activeTimer, onTimerStop, onDiscarded }) => {
 
       <DescriptionField description={description} setDescription={handleDescriptionChange} />
 
-      <Box padding='space.200'></Box>
-      <Inline alignInline='center'>
-        <Heading as="h2">{formatIntToDuration(duration)}</Heading>
-      </Inline>
-      <Box padding='space.200'></Box>
-
+      <ActiveDuration start_date={activeTimer.start_date} />
 
       <Button type='submit' appearance="danger" shouldFitContainer onClick={onTimerStop}>
         STOP TIMER

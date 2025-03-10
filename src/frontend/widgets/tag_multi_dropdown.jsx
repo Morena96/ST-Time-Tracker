@@ -1,12 +1,15 @@
 import { Select, Stack, Label, Heading, Box } from '@forge/react';
 import React from 'react';
 
-const TagMultiDropdown = ({ tags, handleTagsChange, selectedTags }) => {
-
-    const onChange = (tags) => {
-        const selectedTagIds = tags.map(tag => tag.label).join(',');
-        handleTagsChange(selectedTagIds);
+const TagMultiDropdown = ({ tags, handleTagsChange, selectedTags = [] }) => {
+    console.log('selectedTags', selectedTags);
+    const onChange = (_tags) => {
+        const selectedTags = _tags.map(tag => tag.label).join(',');
+        handleTagsChange(selectedTags);
     }
+
+    const selectedTagsOptions = tags.filter(tag => selectedTags.includes(tag.name)).map(tag => ({ label: tag.name, value: tag.id }));
+    console.log('selectedTagsOptions', selectedTagsOptions);
 
     return (
         <Stack grow='fill' alignInline='stretch'>
@@ -17,7 +20,7 @@ const TagMultiDropdown = ({ tags, handleTagsChange, selectedTags }) => {
                 options={tags.map(tag => ({ label: tag.name, value: tag.id }))}
                 onChange={onChange}
                 placeholder="Select tags"
-                value={selectedTags}
+                value={selectedTagsOptions}
                 isMulti
             />
         </Stack>
