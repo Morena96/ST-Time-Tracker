@@ -131,13 +131,6 @@ resolver.define('getProjects', async () => {
   return { success: true, projects: projectsDict.projects };
 });
 
-resolver.define('stopActiveTimer', async () => {
-  const startTime = await storage.get('timerStart');
-  const endTime = Date.now();
-  const duration = endTime - startTime;
-  await storage.delete('timerStart');
-  return { duration };
-});
 
 resolver.define('createTimeEntry', async ({ payload }) => {
   console.log('payload', payload);

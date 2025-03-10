@@ -1,7 +1,7 @@
-import { Textfield ,Stack} from '@forge/react';
+import { Textfield } from '@forge/react';
 import React, { useState, useEffect } from 'react';
 
-const DescriptionField = ({ description, setDescription }) => {
+const DescriptionField = ({ description, setDescription, onBlur }) => {
     const [value, setValue] = useState(null);
 
     useEffect(() => {
@@ -14,7 +14,13 @@ const DescriptionField = ({ description, setDescription }) => {
     };
 
     return (
-            <Textfield value={value} onChange={handleDescriptionChange} width='100%'></Textfield>
+        <Textfield
+            value={value}
+            onChange={handleDescriptionChange}
+            onBlur={onBlur}
+            width='100%'>
+
+        </Textfield>
     );
 };
 

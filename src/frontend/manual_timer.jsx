@@ -285,9 +285,9 @@ const ManualTimer = ({ summary }) => {
         {successMessage && <SuccessMessage message={successMessage} onClose={() => setSuccessMessage(null)} />}
 
         <Box padding='space.100'></Box>
-        <ProjectDropdown projects={projects} handleProjectChange={handleProjectChange} />
+        <ProjectDropdown projects={projects} handleProjectChange={handleProjectChange} selectedProjectId={projectId} />
         <Box padding='space.100'></Box>
-        <TagMultiDropdown tags={tags} handleTagsChange={handleTagsChange} />
+        <TagMultiDropdown tags={tags} handleTagsChange={handleTagsChange} selectedTags={selectedTags} />
         <Box padding='space.100'></Box>
       </Stack>
     </Form>
