@@ -8,8 +8,7 @@ import Tag from './models/tag';
 import Project from './models/project';
 import DescriptionField from './widgets/description_field';
 import TimeEntry from './models/time_entry';
-import { parseTime, parseDate, formatDate, getLastUnlockedDate, parseStringToDuration, formatDateToHHMM, timeStringToNumberString, numberToTimeString, formatIntToDuration, getYesterday, durationToNumberString } from './utils/timeUtils';
-import Duration from './models/Duration';
+import { parseTime, parseDate, formatDate, getLastUnlockedDate, parseStringToDuration, formatDateToHHMM, formatIntToDuration, getYesterday } from './utils/timeUtils';
 import ErrorMessage from './widgets/error_message';
 import SuccessMessage from './widgets/success_message';
 
@@ -19,13 +18,10 @@ const ManualTimer = ({ summary }) => {
   const [startDate, setStartDate] = useState(null);
   const [endDate, setEndDate] = useState(null);
   const [date, setDate] = useState(null);
-  const [duration, setDuration] = useState(0);
+  const [duration, setDuration] = useState("00:00:00");
   const [projectId, setProjectId] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
   const [description, setDescription] = useState('');
-  const [isStartDateFocused, setIsStartDateFocused] = useState(false);
-  const [isEndDateFocused, setIsEndDateFocused] = useState(false);
-  const [isDurationFocused, setIsDurationFocused] = useState(false);
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -62,42 +58,26 @@ const ManualTimer = ({ summary }) => {
     setDescription(description);
   };
 
-  const onFocusStartDate = (e) => {
-    setIsStartDateFocused(true);
-    setStartDate(timeStringToNumberString(startDate));
-  }
-
-  const onFocusEndDate = (e) => {
-    setIsEndDateFocused(true);
-    setEndDate(timeStringToNumberString(endDate));
-  }
-
-  const onFocusDuration = (e) => {
-    setIsDurationFocused(true);
-    setDuration(durationToNumberString(Duration.fromSeconds(duration).toString()));
-  }
-
   const changeStartDate = (e) => {
-    if (/^[0-9]{0,4}$/.test(e.target.value)) {
+    if (/^[0-9]{0,4}$|^[0-9]{1,2}:[0-9]{0,2}$/.test(e.target.value)) {
       setStartDate(e.target.value);
     }
   }
 
   const changeEndDate = (e) => {
-    if (/^[0-9]{0,4}$/.test(e.target.value)) {
+    if (/^[0-9]{0,4}$|^[0-9]{1,2}:[0-9]{0,2}$/.test(e.target.value)) {
       setEndDate(e.target.value);
     }
   }
 
   const changeDuration = (e) => {
-    if (/^[0-9]{0,6}$/.test(e.target.value)) {
+    if (/^[0-9]{0,5}$|^[0-9]{1,2}:[0-9]{0,2}$|^[0-9]{1,2}:[0-9]{1,2}:[0-9]{0,2}$/.test(e.target.value)) {
       setDuration(e.target.value);
     }
   }
 
   const handleStartDateChange = (e) => {
-    const timeString = numberToTimeString(startDate);
-    const newStartDate = parseTime(timeString, date);
+    const newStartDate = parseTime(startDate, date);
     var endTime = parseTime(endDate, date);
 
     if (newStartDate === null) {
@@ -121,17 +101,15 @@ const ManualTimer = ({ summary }) => {
     const diffInSeconds = Math.floor(diffInMs / 1000);
 
 
-    setDuration(diffInSeconds);
-    setIsStartDateFocused(false);
+    setDuration(formatIntToDuration(diffInSeconds));
     setStartDate(formatDateToHHMM(newStartDate));
     setEndDate(formatDateToHHMM(endTime));
   };
 
 
   const handleEndDateChange = (e) => {
-    const timeString = numberToTimeString(endDate);
-    var newEndDate = parseTime(timeString, date);
     const startTime = parseTime(startDate, date);
+    var newEndDate = parseTime(endDate, date);
 
     if (newEndDate === null) {
       newEndDate = timeString;
@@ -148,8 +126,7 @@ const ManualTimer = ({ summary }) => {
     const diffInMs = newEndDate.getTime() - startTime.getTime();
     const diffInSeconds = Math.floor(diffInMs / 1000);
 
-    setDuration(diffInSeconds);
-    setIsEndDateFocused(false);
+    setDuration(formatIntToDuration(diffInSeconds));
     setEndDate(formatDateToHHMM(newEndDate));
   }
 
@@ -157,8 +134,7 @@ const ManualTimer = ({ summary }) => {
     const startTime = parseTime(startDate, date);
     const newDuration = parseStringToDuration(duration);
     setEndDate(formatDateToHHMM(new Date(startTime.setSeconds(startTime.getSeconds() + newDuration))));
-    setDuration(newDuration);
-    setIsDurationFocused(false);
+    setDuration(formatIntToDuration(newDuration));
   }
 
 
@@ -229,9 +205,8 @@ const ManualTimer = ({ summary }) => {
 
         <Textfield
           onChange={changeDuration}
-          onFocus={onFocusDuration}
           onBlur={handleDurationChange}
-          value={isDurationFocused ? duration : formatIntToDuration(duration)}
+          value={duration}
         />
         {formState.errors.durationTextfield && (
           <ErrorMessage>Should not be empty</ErrorMessage>
@@ -250,17 +225,13 @@ const ManualTimer = ({ summary }) => {
           <Box xcss={rangeInputStyle}>
             <Inline space='space.050'>
               <Textfield
-                maxLength={4}
                 value={startDate}
-                onFocus={onFocusStartDate}
                 onChange={changeStartDate}
                 onBlur={handleStartDateChange}
               />
               <Text> - </Text>
               <Textfield
-                maxLength={4}
                 value={endDate}
-                onFocus={onFocusEndDate}
                 onChange={changeEndDate}
                 onBlur={handleEndDateChange}
               />

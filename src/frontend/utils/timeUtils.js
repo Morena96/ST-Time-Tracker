@@ -63,7 +63,7 @@ export const timeToSeconds = (timeString) => {
 export const parseStringToDuration = (timeString) => {
     if (!timeString) return null;
 
-    let parts = String(timeString).match(/.{1,2}(?=(.{2})*$)/g) || [];
+    let parts = String(timeString).split(':');
     let seconds = 0;
     let minutes = 0;
     let hours = 0;
