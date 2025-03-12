@@ -1,5 +1,5 @@
 import React from 'react';
-import { Box, Stack, Heading, useForm, Button, LoadingButton } from "@forge/react";
+import { Box, Stack, Heading, useForm, Button, LoadingButton, Inline } from "@forge/react";
 import { useState } from 'react';
 import ErrorMessage from './widgets/error_message';
 
@@ -22,9 +22,11 @@ const StartTimer = ({ onTimerStart }) => {
   };
 
   return (
-    <Stack grow='fill' alignInline='center'>
+    <Stack grow='fill'>
       <Box padding='space.200'></Box>
-      <Heading as="h2">00:00:00</Heading>
+      <Inline alignInline='center'>
+        <Heading as="h2">00:00:00</Heading>
+      </Inline>
       <Box padding='space.200'></Box>
 
       {isLoading ? (
