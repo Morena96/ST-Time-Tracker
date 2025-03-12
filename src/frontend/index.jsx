@@ -9,11 +9,13 @@ import Loader from './widgets/loader';
 const App = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(null);
   const [activeTimer, setActiveTimer] = useState(null);
+  console.log('app started');
+
 
   const fetchActiveTimer = async (apiKey) => {
     const result = await invoke('getRemoteActiveTimer', { 'apiKey': apiKey });
     if (result.success) {
-      const activeTimer = result.activeTimer;
+      const activeTimer = result.data;
       for (const timeEntry of activeTimer.time_entries) {
         if (timeEntry.end_date === null) {
           setActiveTimer(new TimeEntry(timeEntry.id, timeEntry.project ? timeEntry.project.id : null, timeEntry.start_date, timeEntry.end_date, timeEntry.start_date, timeEntry.description, timeEntry.tags ? timeEntry.tags.split(',').map(tag => tag.trim()) : []));
