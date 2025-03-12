@@ -156,8 +156,12 @@ resolver.define('createTimeEntry', async ({ payload }) => {
       error = errorText;
     }
   }
+  var data = null;
+  if (result.ok) {
+    data = await result.json();
+  }
 
-  return { success: result.ok, error: error, timeEntry: await result.json() };
+  return { success: result.ok, error: error, timeEntry: data };
 });
 
 resolver.define('updateTimeEntry', async ({ payload }) => {
