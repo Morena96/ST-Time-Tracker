@@ -11,8 +11,8 @@ import TimeEntry from './models/time_entry';
 import { parseTime, parseDate, formatDate, getLastUnlockedDate, parseStringToDuration, formatDateToHHMM, formatIntToDuration, getYesterday } from './utils/timeUtils';
 import ErrorMessage from './widgets/error_message';
 import SuccessMessage from './widgets/success_message';
-
-const ManualTimer = ({ summary }) => {
+import Loader from './widgets/loader';
+const ManualTimer = ({ issueKey }) => {
   const [projects, setProjects] = useState([]);
   const tags = Tag.tags;
   const [startDate, setStartDate] = useState(null);
@@ -24,27 +24,49 @@ const ManualTimer = ({ summary }) => {
   const [description, setDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
   const [successMessage, setSuccessMessage] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const { register, handleSubmit, formState } = useForm();
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const { handleSubmit, formState } = useForm();
 
   useEffect(() => {
-    setDescription(summary);
     setStartDate(formatDateToHHMM(new Date()));
     setEndDate(formatDateToHHMM(new Date()));
     setDate(new Date());
 
-    const fetchProjects = async () => {
-      const result = await invoke('getProjects');
-      if (result.success) {
-        const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
-        projectsList.sort((a, b) => a.name.localeCompare(b.name));
-        setProjects(projectsList);
-      } else {
-        console.error('Error fetching projects ', result.error);
+    const fetchData = async () => {
+      const promises = [];
+      
+      // Add fetchProjects promise
+      const fetchProjectsPromise = invoke('getProjects').then(result => {
+        if (result.success) {
+          const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
+          projectsList.sort((a, b) => a.name.localeCompare(b.name));
+          setProjects(projectsList);
+        } else {
+          console.error('Error fetching projects ', result.error);
+        }
+      });
+      promises.push(fetchProjectsPromise);
+
+      // Add fetchIssueData promise if issueKey exists
+      if (issueKey) {
+        const fetchIssueDataPromise = invoke('getIssueData', { 'issueKey': issueKey }).then(result => {
+          if (result.success) {
+            setDescription('[' + issueKey + ']: ' + result.data.fields.summary);
+          } else {
+            console.log('result', result);
+          }
+        });
+        promises.push(fetchIssueDataPromise);
       }
+
+      // Wait for all promises to complete
+      await Promise.all(promises);
+      setIsLoading(false);
     };
-    fetchProjects();
-  }, [summary]);
+
+    fetchData();
+  }, [issueKey]);
 
   const handleProjectChange = (projectId) => {
     setProjectId(projectId);
@@ -166,7 +188,7 @@ const ManualTimer = ({ summary }) => {
 
     const timeEntryJson = new TimeEntry(null, projectId, startDate, endDate, date, description, selectedTags).toJson();
 
-    setIsLoading(true);
+    setIsSaving(true);
 
     const result = await invoke('createTimeEntry', timeEntryJson);
 
@@ -183,7 +205,7 @@ const ManualTimer = ({ summary }) => {
       setErrorMessage(result.error);
     }
 
-    setIsLoading(false);
+    setIsSaving(false);
   };
 
   const datePickerStyle = xcss({
@@ -195,12 +217,21 @@ const ManualTimer = ({ summary }) => {
     minWidth: '100px',
   })
 
+
+  if (isLoading) {
+    return <Stack grow='fill'>
+      <Box padding='space.200'></Box>
+      <Loader />
+      <Box padding='space.200'></Box>
+    </Stack>;
+  }
+
   return (
     <Form onSubmit={handleSubmit(addTimeEntry)}>
       <Stack grow='fill'>
         <Box padding='space.100'></Box>
 
-        <DescriptionField description={summary} setDescription={handleDescriptionChange} />
+        <DescriptionField description={description} setDescription={handleDescriptionChange} />
         <Box padding='space.100'></Box>
 
         <Textfield
@@ -241,7 +272,7 @@ const ManualTimer = ({ summary }) => {
 
         <Box padding='space.100'></Box>
 
-        {isLoading ? (
+        {isSaving ? (
           <LoadingButton appearance="primary" isLoading shouldFitContainer />
         ) : (
           <Button appearance="primary" type='submit'>

@@ -25,7 +25,6 @@ const newContainer = xcss({
 
 const Scaffold = ({ resetApiKey, _activeTimer }) => {
   const { handleSubmit } = useForm();
-  const [summary, setSummary] = useState('');
   const context = useProductContext();
   const [localActiveTimer, setLocalActiveTimer] = useState(null);
   const [issueKey, setIssueKey] = useState(null);
@@ -34,18 +33,8 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
 
   useEffect(() => {
     if (context) {
-      const fetchIssueData = async () => {
-        const _issueKey = context?.extension?.issue?.key;
-        setIssueKey(_issueKey);
-        const result = await invoke('getIssueData', { 'issueKey': _issueKey });
-        if (result.success) {
-          setSummary('[' + _issueKey + ']: ' + result.data.fields.summary);
-        } else {
-          console.log('result', result);
-        }
-      };
-
-      fetchIssueData();
+      const _issueKey = context?.extension?.issue?.key;
+      setIssueKey(_issueKey);
     }
 
     const fetchLocalActiveTimer = async () => {
@@ -70,9 +59,17 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
 
   const onTimerStart = async () => {
     const date = new Date();
-    console.log('onTimerStart', date);
-    const result = await invoke('createTimeEntry', new TimeEntry(null, null, formatDateToHHMM(date), null, date, summary, null, issueKey).toJson());
+    let summary = null;
+    var result = await invoke('getIssueData', { 'issueKey': issueKey });
+    if (result && result.success && result.data && result.data.fields) {
+      summary = '[' + issueKey + ']: ' + result.data.fields.summary;
+    } else {
+      console.log('Error getting issue data:', result);
+    }
+    
+    var result = await invoke('createTimeEntry', new TimeEntry(null, null, formatDateToHHMM(date), null, date, summary, null, issueKey).toJson());
 
+    console.log('result', result);
 
     if (result.success) {
       console.log('timeEntry', result.timeEntry);
@@ -113,7 +110,12 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
         <Box padding='space.100'></Box>
         <Box xcss={containerStyles}>
           <Stack space="space.100">
-            <Tabs id="default">
+            <Tabs id="default" onChange={(index) => {
+              // Force rerender of ManualTimer when tab changes to Manual tab (index 1)
+              if (index === 1) {
+                setActiveTimer(prevState => ({ ...prevState })); // Trigger rerender by updating state
+              }
+            }}>
               <TabList>
                 <Box xcss={newContainer}> <Tab><Inline alignInline='center'> Timer </Inline></Tab></Box>
                 <Box xcss={newContainer}> <Tab> <Inline alignInline='center'> Manual </Inline> </Tab></Box>
@@ -122,7 +124,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
                 {isTimerActive ? <ActiveTimer activeTimer={activeTimer} onTimerStop={onTimerStop} onDiscarded={onDiscarded} /> : <StartTimer onTimerStart={onTimerStart} />}
               </TabPanel>
               <TabPanel>
-                <ManualTimer summary={summary} />
+                <ManualTimer issueKey={issueKey} key={`manual-timer-${Date.now()}`} />
               </TabPanel>
             </Tabs>
           </Stack>

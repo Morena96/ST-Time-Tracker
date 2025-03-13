@@ -133,6 +133,7 @@ resolver.define('getProjects', async () => {
 
 
 resolver.define('createTimeEntry', async ({ payload }) => {
+  console.log('createTimeEntry');
   console.log('payload', payload);
 
   const apiKey = await storage.get('apiKey');
