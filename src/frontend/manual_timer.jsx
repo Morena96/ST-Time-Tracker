@@ -1,7 +1,7 @@
 import ProjectDropdown from './widgets/project_dropdown';
 import TagMultiDropdown from './widgets/tag_multi_dropdown';
 import { Stack, Box, Button, Textfield, Inline, DatePicker, Text, xcss, useForm, Form, LoadingButton } from '@forge/react';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useRef } from 'react';
 import Divider from './widgets/divider';
 import { invoke } from '@forge/bridge';
 import Tag from './models/tag';
@@ -19,6 +19,9 @@ const ManualTimer = ({ issueKey }) => {
   const [endDate, setEndDate] = useState(null);
   const [date, setDate] = useState(null);
   const [duration, setDuration] = useState("00:00:00");
+  const [oldStartDate, setOldStartDate] = useState(null);
+  const [oldEndDate, setOldEndDate] = useState(null);
+  const [oldDuration, setOldDuration] = useState(null);
   const [projectId, setProjectId] = useState(null);
   const [selectedTags, setSelectedTags] = useState([]);
   const [description, setDescription] = useState('');
@@ -27,6 +30,10 @@ const ManualTimer = ({ issueKey }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const { handleSubmit, formState } = useForm();
+  const [isStartDateUpdated, setIsStartDateUpdated] = useState(false);
+  const [isEndDateUpdated, setIsEndDateUpdated] = useState(false);
+  const [isDurationUpdated, setIsDurationUpdated] = useState(false);
+
 
   useEffect(() => {
     setStartDate(formatDateToHHMM(new Date()));
@@ -80,6 +87,18 @@ const ManualTimer = ({ issueKey }) => {
     setDescription(description);
   };
 
+  const onStartDateFocus = () => {
+    setOldStartDate(startDate);
+  }
+
+  const onEndDateFocus = () => {
+    setOldEndDate(endDate);
+  }
+  
+  const onDurationFocus = () => {
+    setOldDuration(duration);
+  }
+
   const changeStartDate = (e) => {
     if (/^[0-9]{0,4}$|^[0-9]{1,2}:[0-9]{0,2}$/.test(e.target.value)) {
       setStartDate(e.target.value);
@@ -99,13 +118,12 @@ const ManualTimer = ({ issueKey }) => {
   }
 
   const handleStartDateChange = (e) => {
-    const newStartDate = parseTime(startDate, date);
-    var endTime = parseTime(endDate, date);
-
-    if (newStartDate === null) {
-      newStartDate = timeString;
+    if (oldStartDate !== startDate) {
+      setIsStartDateUpdated(true);
     }
 
+    const newStartDate = parseTime(startDate, date);
+    var endTime = parseTime(endDate, date);
 
     if (newStartDate > endTime) {
       console.log('newStartDate > endTime', endTime);
@@ -126,16 +144,17 @@ const ManualTimer = ({ issueKey }) => {
     setDuration(formatIntToDuration(diffInSeconds));
     setStartDate(formatDateToHHMM(newStartDate));
     setEndDate(formatDateToHHMM(endTime));
+    setIsStartDateUpdated(false);
   };
 
 
   const handleEndDateChange = (e) => {
+    if (oldEndDate !== endDate) {
+      setIsEndDateUpdated(true);
+    }
+
     const startTime = parseTime(startDate, date);
     var newEndDate = parseTime(endDate, date);
-
-    if (newEndDate === null) {
-      newEndDate = timeString;
-    }
 
     if (startTime > newEndDate) {
       newEndDate = new Date(newEndDate.setDate(newEndDate.getDate() + 1));
@@ -150,13 +169,19 @@ const ManualTimer = ({ issueKey }) => {
 
     setDuration(formatIntToDuration(diffInSeconds));
     setEndDate(formatDateToHHMM(newEndDate));
+    setIsEndDateUpdated(false);
   }
 
   const handleDurationChange = (e) => {
+    if (oldDuration !== duration) {
+      setIsDurationUpdated(true);
+    }
     const startTime = parseTime(startDate, date);
     const newDuration = parseStringToDuration(duration);
+    console.log('newDuration', newDuration);
     setEndDate(formatDateToHHMM(new Date(startTime.setSeconds(startTime.getSeconds() + newDuration))));
     setDuration(formatIntToDuration(newDuration));
+    setIsDurationUpdated(false);
   }
 
 
@@ -235,9 +260,11 @@ const ManualTimer = ({ issueKey }) => {
         <Box padding='space.100'></Box>
 
         <Textfield
+          key={`duration-${isStartDateUpdated || isEndDateUpdated || isDurationUpdated}`}
+          onFocus={onDurationFocus}
           onChange={changeDuration}
           onBlur={handleDurationChange}
-          value={duration}
+          defaultValue={duration}
         />
         {formState.errors.durationTextfield && (
           <ErrorMessage>Should not be empty</ErrorMessage>
@@ -256,14 +283,18 @@ const ManualTimer = ({ issueKey }) => {
           <Box xcss={rangeInputStyle}>
             <Inline space='space.050'>
               <Textfield
-                value={startDate}
+                key={`startDate-${isStartDateUpdated}`}
+                defaultValue={startDate}
                 onChange={changeStartDate}
+                onFocus={onStartDateFocus}
                 onBlur={handleStartDateChange}
               />
               <Text> - </Text>
               <Textfield
-                value={endDate}
+                key={`endDate-${isEndDateUpdated || isDurationUpdated}`}
+                defaultValue={endDate}
                 onChange={changeEndDate}
+                onFocus={onEndDateFocus}
                 onBlur={handleEndDateChange}
               />
             </Inline>
