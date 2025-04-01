@@ -10,7 +10,7 @@ import { Stack, Box, Button, Modal, ModalBody, ModalTransition, ModalTitle, Moda
 import ErrorMessage from './widgets/error_message';
 import ActiveDuration from './widgets/active_duration';
 
-const ActiveTimer = ({ activeTimer, onTimerStop, onDiscarded }) => {
+const ActiveTimer = ({ activeTimer, onTimerStop, onDiscarded, activeProject, fetchActiveProject }) => {
   const [projects, setProjects] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [description, setDescription] = useState(activeTimer.description);
@@ -39,9 +39,11 @@ const ActiveTimer = ({ activeTimer, onTimerStop, onDiscarded }) => {
 
 
   const handleProjectChange = async (projectId) => {
+
     setIsLoading(true);
     const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'project_id': projectId });
     if (result.success) {
+      fetchActiveProject();
       setSelectedProject(projectId);
     } else {
       setErrorMessage(result.error);

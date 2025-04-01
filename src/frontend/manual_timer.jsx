@@ -12,7 +12,7 @@ import { parseTime, parseDate, formatDate, getLastUnlockedDate, parseStringToDur
 import ErrorMessage from './widgets/error_message';
 import SuccessMessage from './widgets/success_message';
 import Loader from './widgets/loader';
-const ManualTimer = ({ issueKey }) => {
+const ManualTimer = ({ issueKey, activeProject, fetchActiveProject }) => {
   const [projects, setProjects] = useState([]);
   const tags = Tag.tags;
   const [startDate, setStartDate] = useState(null);
@@ -22,7 +22,7 @@ const ManualTimer = ({ issueKey }) => {
   const [oldStartDate, setOldStartDate] = useState(null);
   const [oldEndDate, setOldEndDate] = useState(null);
   const [oldDuration, setOldDuration] = useState(null);
-  const [projectId, setProjectId] = useState(null);
+  const [projectId, setProjectId] = useState(activeProject);
   const [selectedTags, setSelectedTags] = useState([]);
   const [description, setDescription] = useState('');
   const [errorMessage, setErrorMessage] = useState(null);
@@ -126,16 +126,12 @@ const ManualTimer = ({ issueKey }) => {
     var endTime = parseTime(endDate, date);
 
     if (newStartDate > endTime) {
-      console.log('newStartDate > endTime', endTime);
       endTime = new Date(endTime.setDate(endTime.getDate() + 1));
     }
 
     if (!(getYesterday(endTime) < newStartDate)) {
-      console.log('endTime.getDate() - 1 < newStartDate.getDate()', endTime);
       endTime = new Date(endTime.setDate(endTime.getDate() - 1));
     }
-    console.log('newStartDate', newStartDate);
-    console.log('endTime', endTime);
 
     const diffInMs = endTime.getTime() - newStartDate.getTime();
     const diffInSeconds = Math.floor(diffInMs / 1000);
@@ -178,7 +174,6 @@ const ManualTimer = ({ issueKey }) => {
     }
     const startTime = parseTime(startDate, date);
     const newDuration = parseStringToDuration(duration);
-    console.log('newDuration', newDuration);
     setEndDate(formatDateToHHMM(new Date(startTime.setSeconds(startTime.getSeconds() + newDuration))));
     setDuration(formatIntToDuration(newDuration));
     setIsDurationUpdated(false);
@@ -218,6 +213,7 @@ const ManualTimer = ({ issueKey }) => {
     const result = await invoke('createTimeEntry', timeEntryJson);
 
     if (result.success) {
+      fetchActiveProject();
       setStartDate(formatDateToHHMM(timeEntryJson.end_date));
       setDate(timeEntryJson.end_date);
 

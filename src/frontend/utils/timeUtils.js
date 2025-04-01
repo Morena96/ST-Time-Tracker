@@ -109,7 +109,6 @@ export const parseStringToDuration = (timeString) => {
         return new Duration(0, 0, 0).inSeconds;
     }
 
-    console.log('duration.inSeconds: ', duration.inSeconds);
     return duration.inSeconds;
 };
 

@@ -35,6 +35,11 @@ resolver.define('getApiKey', async () => {
   }
 });
 
+resolver.define('getActiveProject', async () => {
+  const activeProject = await storage.get('activeProject');
+  return { activeProject };
+});
+
 resolver.define('getRemoteActiveTimer', async ({ payload }) => {
   const apiKey = payload.apiKey;
   const time_zone = getTimezoneOffsetInHours();
@@ -133,9 +138,6 @@ resolver.define('getProjects', async () => {
 
 
 resolver.define('createTimeEntry', async ({ payload }) => {
-  console.log('createTimeEntry');
-  console.log('payload', payload);
-
   const apiKey = await storage.get('apiKey');
 
   const result = await fetch(`${baseUrl}/user_time_entries`, {
@@ -159,6 +161,9 @@ resolver.define('createTimeEntry', async ({ payload }) => {
   }
   var data = null;
   if (result.ok) {
+    if (payload.project_id) {
+      await storage.set('activeProject', payload.project_id);
+    }
     data = await result.json();
   }
 
@@ -166,7 +171,6 @@ resolver.define('createTimeEntry', async ({ payload }) => {
 });
 
 resolver.define('updateTimeEntry', async ({ payload }) => {
-  console.log('payload', payload);
   const apiKey = await storage.get('apiKey');
   const result = await fetch(`${baseUrl}/user_time_entries/${payload.timeEntryId}`, {
     method: 'PUT',
@@ -187,6 +191,9 @@ resolver.define('updateTimeEntry', async ({ payload }) => {
     } catch {
       error = errorText;
     }
+  }
+  if (result.ok && payload.project_id) {
+    await storage.set('activeProject', payload.project_id);
   }
 
   return { success: result.ok, error: error };

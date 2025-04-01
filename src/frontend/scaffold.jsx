@@ -30,6 +30,14 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
   const [issueKey, setIssueKey] = useState(null);
   const [activeTimer, setActiveTimer] = useState(_activeTimer);
   const [isLoading, setIsLoading] = useState(false);
+  const [activeProject, setActiveProject] = useState(null);
+
+  const fetchActiveProject = async () => {
+    const result = await invoke('getActiveProject');
+    if (result.activeProject) {
+      setActiveProject(result.activeProject);
+    }
+  };
 
   useEffect(() => {
     if (context) {
@@ -50,13 +58,16 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
       setIsLoading(false);
     };
 
+   
+
     fetchLocalActiveTimer();
+    fetchActiveProject();
   }, [context]);
 
   const onResetApiKey = async (data) => {
     resetApiKey();
   };
-
+ 
   const onTimerStart = async () => {
     const date = new Date();
     let summary = null;
@@ -66,14 +77,11 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
     } else {
       console.log('Error getting issue data:', result);
     }
-    
-    var result = await invoke('createTimeEntry', new TimeEntry(null, null, formatDateToHHMM(date), null, date, summary, null, issueKey).toJson());
-
-    console.log('result', result);
+    var result = await invoke('createTimeEntry', new TimeEntry(null, activeProject, formatDateToHHMM(date), null, date, summary, null, issueKey).toJson());
 
     if (result.success) {
-      console.log('timeEntry', result.timeEntry);
-      const timeEntry = new TimeEntry(result.timeEntry.id, result.timeEntry.project_id, result.timeEntry.start_date, result.timeEntry.end_date, result.timeEntry.date, result.timeEntry.description, result.timeEntry.tags, issueKey);
+      var cProject = result.timeEntry.project==null?null:result.timeEntry.project.id;
+      const timeEntry = new TimeEntry(result.timeEntry.id, cProject, result.timeEntry.start_date, result.timeEntry.end_date, result.timeEntry.date, result.timeEntry.description, result.timeEntry.tags, issueKey);
       await invoke('setLocalActiveTimer', { 'timeEntry': timeEntry });
       setLocalActiveTimer(timeEntry);
       setActiveTimer(timeEntry);
@@ -121,10 +129,10 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
                 <Box xcss={newContainer}> <Tab> <Inline alignInline='center'> Manual </Inline> </Tab></Box>
               </TabList>
               <TabPanel>
-                {isTimerActive ? <ActiveTimer activeTimer={activeTimer} onTimerStop={onTimerStop} onDiscarded={onDiscarded} /> : <StartTimer onTimerStart={onTimerStart} />}
+                {isTimerActive ? <ActiveTimer activeTimer={activeTimer} fetchActiveProject={fetchActiveProject} onTimerStop={onTimerStop} onDiscarded={onDiscarded} activeProject={activeProject} /> : <StartTimer onTimerStart={onTimerStart} />}
               </TabPanel>
               <TabPanel>
-                <ManualTimer issueKey={issueKey} key={`manual-timer-${Date.now()}`} />
+                <ManualTimer issueKey={issueKey} activeProject={activeProject} key={`manual-timer-${Date.now()}`} fetchActiveProject={fetchActiveProject} />
               </TabPanel>
             </Tabs>
           </Stack>

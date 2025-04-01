@@ -11,7 +11,6 @@ const StartTimer = ({ onTimerStart }) => {
 
   const _onTimerStart = async (data) => {
     setIsLoading(true);
-    console.log('onTimerStart', data);
     const result = await onTimerStart();
 
     if (!result.success) {

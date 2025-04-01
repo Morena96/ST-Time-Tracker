@@ -35,7 +35,6 @@ const App = () => {
   useEffect(() => {
     const fetchApiKey = async () => {
       const result = await invoke('getApiKey');
-      console.log('fetchApiKey result:', result.apiKey);
       if (result.apiKey) {
         fetchActiveTimer(result.apiKey);
       } else {
@@ -45,8 +44,6 @@ const App = () => {
 
     fetchApiKey();
   }, []);
-
-  console.log('activeTimer', activeTimer);
 
   if (isLoggedIn) {
     return <Scaffold resetApiKey={resetApiKey} _activeTimer={activeTimer} />;

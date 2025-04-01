@@ -6,8 +6,6 @@ const ProjectDropdown = ({ projects, handleProjectChange, selectedProjectId }) =
         handleProjectChange(e.value);
     }
 
-    console.log('selectedProjectId', selectedProjectId);
-
     var selectedProject = null;
 
     if (selectedProjectId) {

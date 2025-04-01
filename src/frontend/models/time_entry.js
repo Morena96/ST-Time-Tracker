@@ -27,7 +27,6 @@ class TimeEntry {
 
     toJson() {
         const time_zone = getTimezoneOffsetInHours();
-        console.log('time_zone', time_zone);
         const start_date = parseTime(this.start_date, this.date);
 
 
