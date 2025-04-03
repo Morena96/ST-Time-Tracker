@@ -9,8 +9,9 @@ import DescriptionField from './widgets/description_field';
 import { Stack, Box, Button, Modal, ModalBody, ModalTransition, ModalTitle, ModalFooter, ModalHeader, Text, Strong, LoadingButton } from '@forge/react';
 import ErrorMessage from './widgets/error_message';
 import ActiveDuration from './widgets/active_duration';
+import { formatDateToISO } from './utils/timeUtils';
 
-const ActiveTimer = ({ activeTimer, onTimerStop, onDiscarded, activeProject, fetchActiveProject }) => {
+const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activeProject, fetchActiveProject }) => {
   const [projects, setProjects] = useState([]);
   const [isOpen, setIsOpen] = useState(false);
   const [description, setDescription] = useState(activeTimer.description);
@@ -95,8 +96,34 @@ const ActiveTimer = ({ activeTimer, onTimerStop, onDiscarded, activeProject, fet
       return;
     }
     setIsLoading(true);
-    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'end_date': new Date() });
+    var endDate = new Date();
+    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'end_date': endDate });
     if (result.success) {
+      var startDate = new Date(activeTimer.start_date);
+      var seconds = Math.floor((endDate - startDate) / 1000);
+      var minutes = Math.max(1, Math.ceil(seconds/60));
+      var bodyData = `{
+        "comment": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "${description}",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "doc",
+          "version": 1
+        },
+        "timeSpent": "${minutes}m",
+        "started": "${formatDateToISO(startDate)}"
+      }`;
+
+      await invoke('createIssueWorkLog', { 'bodyData': bodyData, 'issueKey': issueKey });
+
       onTimerStop();
     } else {
       setErrorMessage(result.error);

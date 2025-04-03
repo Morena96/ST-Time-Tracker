@@ -200,6 +200,21 @@ resolver.define('updateTimeEntry', async ({ payload }) => {
 });
 
 
+resolver.define('createIssueWorkLog', async ({ payload }) => {
+  console.log('bodyData',payload.bodyData);
+  const response = await api.asUser().requestJira(route`/rest/api/3/issue/${payload.issueKey}/worklog`, {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: payload.bodyData
+  });
+  
+  console.log(`Response: ${response.status} ${response.statusText}`);
+  console.log(await response.json());
+});
+
 resolver.define('deleteLocalActiveTimer', async () => {
   await storage.delete('timeEntry');
   return { success: true };

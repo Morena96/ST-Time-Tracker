@@ -96,6 +96,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
   const onTimerStop = async () => {
     setActiveTimer(null);
     setLocalActiveTimer(null);
+    await invoke('deleteLocalActiveTimer');
   };
 
   const onDiscarded = async () => {
@@ -129,7 +130,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
                 <Box xcss={newContainer}> <Tab> <Inline alignInline='center'> Manual </Inline> </Tab></Box>
               </TabList>
               <TabPanel>
-                {isTimerActive ? <ActiveTimer activeTimer={activeTimer} fetchActiveProject={fetchActiveProject} onTimerStop={onTimerStop} onDiscarded={onDiscarded} activeProject={activeProject} /> : <StartTimer onTimerStart={onTimerStart} />}
+                {isTimerActive ? <ActiveTimer issueKey={issueKey} activeTimer={activeTimer} fetchActiveProject={fetchActiveProject} onTimerStop={onTimerStop} onDiscarded={onDiscarded} activeProject={activeProject} /> : <StartTimer onTimerStart={onTimerStart} />}
               </TabPanel>
               <TabPanel>
                 <ManualTimer issueKey={issueKey} activeProject={activeProject} key={`manual-timer-${Date.now()}`} fetchActiveProject={fetchActiveProject} />

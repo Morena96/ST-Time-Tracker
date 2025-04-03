@@ -16,13 +16,14 @@ resources:
     path: src/frontend/index.jsx
 permissions:
   scopes:
+    - write:jira-work
     - read:jira-work
     - storage:app
   external:
     fetch:
       backend:
-        - 'https://scrumlaunch-teams-dev.herokuapp.com/v2'
-        - 'https://scrumteams.herokuapp.com/v2'
+        - https://scrumlaunch-teams-dev.herokuapp.com/v2
+        - https://scrumteams.herokuapp.com/v2
 
 app:
   runtime:

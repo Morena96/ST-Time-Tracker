@@ -10,6 +10,42 @@ export const formatTime = (seconds) => {
     return Duration.fromSeconds(seconds).toString();
 };
 
+/**
+ * Formats a Date object to ISO string with specific format "YYYY-MM-DDTHH:MM:SS.sss+ZZZZ"
+ * @param {Date} date - The Date object to format
+ * @returns {string} Formatted date string like "2021-01-17T12:34:00.000+0000"
+ */
+export const formatDateToISO = (date) => {
+    if (!date || !(date instanceof Date) || isNaN(date.getTime())) {
+        return '';
+    }
+    
+    try {
+        // Get the date components
+        const year = date.getFullYear();
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const day = date.getDate().toString().padStart(2, '0');
+        
+        // Get the time components
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const seconds = date.getSeconds().toString().padStart(2, '0');
+        const milliseconds = date.getMilliseconds().toString().padStart(3, '0');
+        
+        // Get timezone offset in format +HHMM or -HHMM
+        const tzOffset = date.getTimezoneOffset();
+        const tzSign = tzOffset <= 0 ? '+' : '-';
+        const tzHours = Math.abs(Math.floor(tzOffset / 60)).toString().padStart(2, '0');
+        const tzMinutes = Math.abs(tzOffset % 60).toString().padStart(2, '0');
+        
+        return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${tzSign}${tzHours}${tzMinutes}`;
+    } catch (error) {
+        console.error('Error formatting date to ISO', error);
+        return '';
+    }
+};
+
+
 export const formatDateToHHMM = (date) => {
     if (!date || !(date instanceof Date)) return '';
     try {
