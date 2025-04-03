@@ -149,7 +149,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
       <Form onSubmit={handleSubmit(onResetApiKey)}>
         <Inline>
           <Box padding='space.100'></Box>
-          <Button type='submit' appearance="primary" onClick={handleSubmit(onResetApiKey)}>
+          <Button type='submit' appearance="warning" spacing='compact' onClick={handleSubmit(onResetApiKey)}>
             Reset API key
           </Button>
         </Inline>
