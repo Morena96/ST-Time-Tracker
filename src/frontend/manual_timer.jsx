@@ -12,6 +12,7 @@ import { parseTime, parseDate, formatDate, getLastUnlockedDate, parseStringToDur
 import ErrorMessage from './widgets/error_message';
 import SuccessMessage from './widgets/success_message';
 import Loader from './widgets/loader';
+import { formatDateToISO } from './utils/timeUtils';
 const ManualTimer = ({ issueKey, activeProject, fetchActiveProject }) => {
   const [projects, setProjects] = useState([]);
   const tags = Tag.tags;
@@ -213,6 +214,32 @@ const ManualTimer = ({ issueKey, activeProject, fetchActiveProject }) => {
     const result = await invoke('createTimeEntry', timeEntryJson);
 
     if (result.success) {
+      var st = new Date(timeEntryJson.start_date);
+      var seconds = Math.floor((timeEntryJson.end_date - st) / 1000);
+      var minutes = Math.max(1, Math.ceil(seconds/60));
+      var bodyData = `{
+        "comment": {
+          "content": [
+            {
+              "content": [
+                {
+                  "text": "${description}",
+                  "type": "text"
+                }
+              ],
+              "type": "paragraph"
+            }
+          ],
+          "type": "doc",
+          "version": 1
+        },
+        "timeSpent": "${minutes}m",
+        "started": "${formatDateToISO(st)}"
+      }`;
+
+      await invoke('createIssueWorkLog', { 'bodyData': bodyData, 'issueKey': issueKey });
+
+
       fetchActiveProject();
       setStartDate(formatDateToHHMM(timeEntryJson.end_date));
       setDate(timeEntryJson.end_date);
