@@ -33,9 +33,10 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
   const [activeProject, setActiveProject] = useState(null);
 
   const fetchActiveProject = async () => {
-    const result = await invoke('getActiveProject');
-    if (result.activeProject) {
-      setActiveProject(result.activeProject);
+    const activeProject = localStorage.getItem('activeProject');
+    
+    if (activeProject) {
+      setActiveProject(activeProject);
     }
   };
 
@@ -47,12 +48,12 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
 
     const fetchLocalActiveTimer = async () => {
       setIsLoading(true);
-      const result = await invoke('getLocalActiveTimer');
-      if (result.timeEntry) {
-        if (!activeTimer || result.timeEntry.id !== activeTimer.id) {
-          await invoke('deleteLocalActiveTimer');
+      const timeEntry = localStorage.getItem('timeEntry');
+      if (timeEntry) {
+        if (!activeTimer || timeEntry.id !== activeTimer.id) {
+          localStorage.removeItem('timeEntry');
         } else {
-          setLocalActiveTimer(result.timeEntry);
+          setLocalActiveTimer(timeEntry);
         }
       }
       setIsLoading(false);
@@ -77,12 +78,14 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
     } else {
       console.log('Error getting issue data:', result);
     }
-    var result = await invoke('createTimeEntry', new TimeEntry(null, activeProject, formatDateToHHMM(date), null, date, summary, null, issueKey).toJson());
+
+    var apiKey = localStorage.getItem('apiKey');
+    var result = await invoke('createTimeEntry',  { 'apiKey': apiKey ,'timeEntry':new TimeEntry(null, activeProject, formatDateToHHMM(date), null, date, summary, null, issueKey).toJson()});
 
     if (result.success) {
       var cProject = result.timeEntry.project==null?null:result.timeEntry.project.id;
       const timeEntry = new TimeEntry(result.timeEntry.id, cProject, result.timeEntry.start_date, result.timeEntry.end_date, result.timeEntry.date, result.timeEntry.description, result.timeEntry.tags, issueKey);
-      await invoke('setLocalActiveTimer', { 'timeEntry': timeEntry });
+      localStorage.setItem('timeEntry', timeEntry);
       setLocalActiveTimer(timeEntry);
       setActiveTimer(timeEntry);
       return { success: true, timeEntry: timeEntry };
@@ -96,11 +99,11 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
   const onTimerStop = async () => {
     setActiveTimer(null);
     setLocalActiveTimer(null);
-    await invoke('deleteLocalActiveTimer');
+    localStorage.removeItem('timeEntry');
   };
 
   const onDiscarded = async () => {
-    await invoke('deleteLocalActiveTimer');
+    localStorage.removeItem('timeEntry');
     setLocalActiveTimer(null);
     setActiveTimer(null);
   };

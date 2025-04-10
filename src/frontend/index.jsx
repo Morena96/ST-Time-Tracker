@@ -13,6 +13,7 @@ const App = () => {
   const fetchActiveTimer = async (apiKey) => {
     const result = await invoke('getRemoteActiveTimer', { 'apiKey': apiKey });
     if (result.success) {
+      localStorage.setItem('apiKey', apiKey);
       const activeTimer = result.activeTimer;
       for (const timeEntry of activeTimer.time_entries) {
         if (timeEntry.end_date === null) {
@@ -21,6 +22,7 @@ const App = () => {
         }
       }
     } else {
+      localStorage.removeItem('apiKey');
       console.log('error', result.error);
     }
     setIsLoggedIn(result.success);
@@ -28,15 +30,16 @@ const App = () => {
   };
 
   const resetApiKey = async () => {
-    await invoke('resetApiKey');
+    localStorage.removeItem('apiKey');
     setIsLoggedIn(false);
   };
 
   useEffect(() => {
     const fetchApiKey = async () => {
-      const result = await invoke('getApiKey');
-      if (result.apiKey) {
-        fetchActiveTimer(result.apiKey);
+      const apiKey = localStorage.getItem('apiKey');
+      console.log('apiKey', apiKey);
+      if (apiKey) {
+        fetchActiveTimer(apiKey);
       } else {
         setIsLoggedIn(false);
       }

@@ -9,7 +9,7 @@ const ProjectDropdown = ({ projects, handleProjectChange, selectedProjectId }) =
     var selectedProject = null;
 
     if (selectedProjectId) {
-        selectedProject = projects.find(p => p.id === selectedProjectId);
+        selectedProject = projects.find(p => String(p.id) === String(selectedProjectId));
     }
 
     return (

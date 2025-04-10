@@ -40,12 +40,16 @@ const ManualTimer = ({ issueKey, activeProject, fetchActiveProject }) => {
     setStartDate(formatDateToHHMM(new Date()));
     setEndDate(formatDateToHHMM(new Date()));
     setDate(new Date());
+    console.log('aslynda active project ', activeProject);
+    console.log('aslynda project ', projectId);
+
 
     const fetchData = async () => {
       const promises = [];
       
       // Add fetchProjects promise
-      const fetchProjectsPromise = invoke('getProjects').then(result => {
+      var apiKey = localStorage.getItem('apiKey');
+      const fetchProjectsPromise = invoke('getProjects', { 'apiKey': apiKey }).then(result => {
         if (result.success) {
           const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
           projectsList.sort((a, b) => a.name.localeCompare(b.name));
@@ -211,9 +215,14 @@ const ManualTimer = ({ issueKey, activeProject, fetchActiveProject }) => {
 
     setIsSaving(true);
 
-    const result = await invoke('createTimeEntry', timeEntryJson);
+    var apiKey = localStorage.getItem('apiKey');
+    const result = await invoke('createTimeEntry', { 'apiKey': apiKey, 'timeEntry': timeEntryJson } );
 
     if (result.success) {
+      if (projectId) {
+        localStorage.setItem('activeProject', projectId);
+      }
+
       var st = new Date(timeEntryJson.start_date);
       var seconds = Math.floor((timeEntryJson.end_date - st) / 1000);
       var minutes = Math.max(1, Math.ceil(seconds/60));

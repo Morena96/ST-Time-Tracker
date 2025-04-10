@@ -24,7 +24,8 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
   useEffect(() => {
     const fetchProjects = async () => {
       setIsLoading(true);
-      const result = await invoke('getProjects');
+      var apiKey = localStorage.getItem('apiKey');
+      const result = await invoke('getProjects', { 'apiKey': apiKey });
       if (result.success) {
         const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
         projectsList.sort((a, b) => a.name.localeCompare(b.name));
@@ -44,6 +45,7 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
     setIsLoading(true);
     const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'project_id': projectId });
     if (result.success) {
+      localStorage.setItem('activeProject',projectId)
       fetchActiveProject();
       setSelectedProject(projectId);
     } else {
@@ -133,7 +135,8 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
 
   const handleDiscardTimer = async () => {
     setIsLoading(true);
-    const result = await invoke('deleteActiveTimer', { 'timeEntryId': activeTimer.id });
+    var apiKey = localStorage.getItem('apiKey');
+    const result = await invoke('deleteActiveTimer', { 'apiKey': apiKey, 'timeEntryId': activeTimer.id });
     if (result.success) {
       onDiscarded();
     } else {

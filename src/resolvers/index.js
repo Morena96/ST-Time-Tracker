@@ -1,5 +1,4 @@
 import Resolver from '@forge/resolver';
-import { storage, fetch } from '@forge/api';
 import { checkResponse } from './utils/checkResponse';
 import api, { route } from "@forge/api";
 const resolver = new Resolver();
@@ -21,27 +20,9 @@ resolver.define('getIssueData', async ({ payload }) => {
   }
 });
 
-resolver.define('storeApiKey', async ({ payload }) => {
-  await storage.set('apiKey', payload.apiKey);
-  return { success: true };
-});
-
-resolver.define('getApiKey', async () => {
-  try {
-    const apiKey = await storage.get('apiKey');
-    return { apiKey };
-  } catch (error) {
-    throw error;
-  }
-});
-
-resolver.define('getActiveProject', async () => {
-  const activeProject = await storage.get('activeProject');
-  return { activeProject };
-});
-
 resolver.define('getRemoteActiveTimer', async ({ payload }) => {
   const apiKey = payload.apiKey;
+
   const time_zone = getTimezoneOffsetInHours();
   const url = `${baseUrl}/user_time_entries?page=1&limit=25&order_by=time&sort_to=desc&time_zone=${time_zone}`;
 
@@ -52,12 +33,6 @@ resolver.define('getRemoteActiveTimer', async ({ payload }) => {
       'Content-Type': 'application/json; charset=UTF-8',
     }
   });
-
-  if (result.ok) {
-    await storage.set('apiKey', apiKey);
-  } else {
-    await storage.delete('apiKey');
-  }
 
   var error = null;
 
@@ -79,48 +54,8 @@ resolver.define('getRemoteActiveTimer', async ({ payload }) => {
   }
 });
 
-resolver.define('getLocalActiveTimer', async () => {
-  const timeEntry = await storage.get('timeEntry');
-
-  return { success: true, timeEntry: timeEntry };
-});
-
-resolver.define('setLocalActiveTimer', async ({ payload }) => {
-  const result = await storage.set('timeEntry', payload.timeEntry);
-  return { success: true };
-});
-
-
-// resolver.define('checkApiKey', async ({ payload }) => {
-//   try {
-//     const result = await fetch(`${baseUrl}/users/info`, {
-//       method: 'GET',
-//       headers: {
-//         'HTTP-USER-TOKEN': payload.apiKey,
-//         'Content-Type': 'application/json; charset=UTF-8',
-//       }
-//     });
-
-//     await checkResponse('checkApiKey', result);
-
-//     const user = await result.json();
-
-//     if (result.ok) {
-//       await storage.set('apiKey', payload.apiKey);
-//     } else {
-//       await storage.delete('apiKey');
-//     }
-
-//     return { success: result.ok ,user};
-
-//   } catch (error) {
-//     await storage.delete('apiKey');
-//     return { success: false };
-//   }
-// });
-
-resolver.define('getProjects', async () => {
-  const apiKey = await storage.get('apiKey');
+resolver.define('getProjects', async ({ payload }) => {
+  const apiKey = payload.apiKey;
   const result = await fetch(`${baseUrl}/user_time_entries/projects`, {
     method: 'GET',
     headers: {
@@ -138,7 +73,7 @@ resolver.define('getProjects', async () => {
 
 
 resolver.define('createTimeEntry', async ({ payload }) => {
-  const apiKey = await storage.get('apiKey');
+  const apiKey = payload.apiKey;
 
   const result = await fetch(`${baseUrl}/user_time_entries`, {
     method: 'POST',
@@ -146,7 +81,7 @@ resolver.define('createTimeEntry', async ({ payload }) => {
       'HTTP-USER-TOKEN': apiKey,
       'Content-Type': 'application/json; charset=UTF-8',
     },
-    body: JSON.stringify(payload)
+    body: JSON.stringify(payload.timeEntry)
   });
   var error = null;
 
@@ -160,10 +95,8 @@ resolver.define('createTimeEntry', async ({ payload }) => {
     }
   }
   var data = null;
+  
   if (result.ok) {
-    if (payload.project_id) {
-      await storage.set('activeProject', payload.project_id);
-    }
     data = await result.json();
   }
 
@@ -171,7 +104,7 @@ resolver.define('createTimeEntry', async ({ payload }) => {
 });
 
 resolver.define('updateTimeEntry', async ({ payload }) => {
-  const apiKey = await storage.get('apiKey');
+  const apiKey = payload.apiKey;
   const result = await fetch(`${baseUrl}/user_time_entries/${payload.timeEntryId}`, {
     method: 'PUT',
     headers: {
@@ -192,10 +125,7 @@ resolver.define('updateTimeEntry', async ({ payload }) => {
       error = errorText;
     }
   }
-  if (result.ok && payload.project_id) {
-    await storage.set('activeProject', payload.project_id);
-  }
-
+  
   return { success: result.ok, error: error };
 });
 
@@ -215,13 +145,8 @@ resolver.define('createIssueWorkLog', async ({ payload }) => {
   console.log(await response.json());
 });
 
-resolver.define('deleteLocalActiveTimer', async () => {
-  await storage.delete('timeEntry');
-  return { success: true };
-});
-
 resolver.define('deleteActiveTimer', async ({ payload }) => {
-  const apiKey = await storage.get('apiKey');
+  const apiKey = payload.apiKey;
   const result = await fetch(`${baseUrl}/user_time_entries/${payload.timeEntryId}`, {
     method: 'DELETE',
     headers: {
@@ -243,13 +168,6 @@ resolver.define('deleteActiveTimer', async ({ payload }) => {
   }
 
   return { success: result.ok, error: error };
-});
-
-
-
-resolver.define('resetApiKey', async () => {
-  await storage.delete('apiKey');
-  return { success: true };
 });
 
 export const handler = resolver.getDefinitions();
