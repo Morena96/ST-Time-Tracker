@@ -37,7 +37,6 @@ const App = () => {
   useEffect(() => {
     const fetchApiKey = async () => {
       const apiKey = localStorage.getItem('apiKey');
-      console.log('apiKey', apiKey);
       if (apiKey) {
         fetchActiveTimer(apiKey);
       } else {

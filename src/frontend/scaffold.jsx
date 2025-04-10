@@ -34,7 +34,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
 
   const fetchActiveProject = async () => {
     const activeProject = localStorage.getItem('activeProject');
-    
+
     if (activeProject) {
       setActiveProject(activeProject);
     }
@@ -48,11 +48,22 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
 
     const fetchLocalActiveTimer = async () => {
       setIsLoading(true);
-      const timeEntry = localStorage.getItem('timeEntry');
-      if (timeEntry) {
-        if (!activeTimer || timeEntry.id !== activeTimer.id) {
+      const timeEntryStr = localStorage.getItem('timeEntry');
+      if (timeEntryStr) {
+        const parsedTimeEntry = JSON.parse(timeEntryStr);
+        if (!activeTimer || parsedTimeEntry.id !== activeTimer.id) {
           localStorage.removeItem('timeEntry');
         } else {
+          const timeEntry = new TimeEntry(
+            parsedTimeEntry.id,
+            parsedTimeEntry.project_id,
+            parsedTimeEntry.start_date,
+            parsedTimeEntry.end_date,
+            parsedTimeEntry.date,
+            parsedTimeEntry.description,
+            parsedTimeEntry.tags,
+            parsedTimeEntry.kanban_board_id
+          );
           setLocalActiveTimer(timeEntry);
         }
       }
@@ -85,7 +96,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
     if (result.success) {
       var cProject = result.timeEntry.project==null?null:result.timeEntry.project.id;
       const timeEntry = new TimeEntry(result.timeEntry.id, cProject, result.timeEntry.start_date, result.timeEntry.end_date, result.timeEntry.date, result.timeEntry.description, result.timeEntry.tags, issueKey);
-      localStorage.setItem('timeEntry', timeEntry);
+      localStorage.setItem('timeEntry', JSON.stringify(timeEntry));
       setLocalActiveTimer(timeEntry);
       setActiveTimer(timeEntry);
       return { success: true, timeEntry: timeEntry };

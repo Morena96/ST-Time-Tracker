@@ -40,9 +40,6 @@ const ManualTimer = ({ issueKey, activeProject, fetchActiveProject }) => {
     setStartDate(formatDateToHHMM(new Date()));
     setEndDate(formatDateToHHMM(new Date()));
     setDate(new Date());
-    console.log('aslynda active project ', activeProject);
-    console.log('aslynda project ', projectId);
-
 
     const fetchData = async () => {
       const promises = [];
