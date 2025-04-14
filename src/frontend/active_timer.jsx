@@ -20,11 +20,12 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
   const [errorMessage, setErrorMessage] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const tags = Tag.tags;
+  var apiKey = localStorage.getItem('apiKey');
+
 
   useEffect(() => {
     const fetchProjects = async () => {
       setIsLoading(true);
-      var apiKey = localStorage.getItem('apiKey');
       const result = await invoke('getProjects', { 'apiKey': apiKey });
       if (result.success) {
         const projectsList = result.projects.map(project => new Project(project.id, project.name, project.logoS3Key, project.active));
@@ -135,7 +136,6 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
 
   const handleDiscardTimer = async () => {
     setIsLoading(true);
-    var apiKey = localStorage.getItem('apiKey');
     const result = await invoke('deleteActiveTimer', { 'apiKey': apiKey, 'timeEntryId': activeTimer.id });
     if (result.success) {
       onDiscarded();
