@@ -43,7 +43,7 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
   const handleProjectChange = async (projectId) => {
 
     setIsLoading(true);
-    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'project_id': projectId });
+    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'project_id': projectId , 'apiKey': apiKey});
     if (result.success) {
       localStorage.setItem('activeProject',projectId)
       fetchActiveProject();
@@ -56,7 +56,7 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
 
   const handleTagsChange = async (tags) => {
     setIsLoading(true);
-    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'tags': tags });
+    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'tags': tags , 'apiKey': apiKey});
     if (result.success) {
       setSelectedTags(tags);
     } else {
@@ -71,7 +71,7 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
 
   const onBlurDescription = async () => {
     setIsLoading(true);
-    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'description': description });
+    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'description': description , 'apiKey': apiKey});
 
     if (!result.success) {
       setErrorMessage(result.error);
@@ -99,7 +99,7 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
     }
     setIsLoading(true);
     var endDate = new Date();
-    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'end_date': endDate });
+    const result = await invoke('updateTimeEntry', { 'timeEntryId': activeTimer.id, 'end_date': endDate , 'apiKey': apiKey});
     if (result.success) {
       var startDate = new Date(activeTimer.start_date);
       var seconds = Math.floor((endDate - startDate) / 1000);
