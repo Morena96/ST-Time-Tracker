@@ -1,13 +1,22 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Box, Stack, Heading, useForm, Button, LoadingButton, Inline } from "@forge/react";
 import { useState } from 'react';
 import ErrorMessage from './widgets/error_message';
+import SuccessMessage from './widgets/success_message';
 
-const StartTimer = ({ onTimerStart }) => {
-  const [errorMessage, setErrorMessage] = useState(null);
+const StartTimer = ({ onTimerStart, successMessage: propSuccessMessage, errorMessage: propErrorMessage }) => {
+  const [errorMessage, setErrorMessage] = useState(propErrorMessage);
+  const [successMessage, setSuccessMessage] = useState(propSuccessMessage);
   const [isLoading, setIsLoading] = useState(false);
-
   const { handleSubmit } = useForm();
+
+  useEffect(() => {
+    setSuccessMessage(propSuccessMessage);
+  }, [propSuccessMessage]);
+
+  useEffect(() => {
+    setErrorMessage(propErrorMessage);
+  }, [propErrorMessage]);
 
   const _onTimerStart = async (data) => {
     setIsLoading(true);
@@ -38,6 +47,7 @@ const StartTimer = ({ onTimerStart }) => {
       <Box padding='space.050'></Box>
 
       {errorMessage && <ErrorMessage message={errorMessage} onClose={() => setErrorMessage(null)} />}
+      {successMessage && <SuccessMessage message={successMessage} onClose={() => setSuccessMessage(null)} />}
       {errorMessage && <Box padding='space.050'></Box>}
 
     </Stack>

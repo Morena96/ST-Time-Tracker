@@ -31,6 +31,8 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
   const [activeTimer, setActiveTimer] = useState(_activeTimer);
   const [isLoading, setIsLoading] = useState(false);
   const [activeProject, setActiveProject] = useState(null);
+  const [successMessage, setSuccessMessage] = useState(null);
+  const [errorMessage, setErrorMessage] = useState(null);
 
   const fetchActiveProject = async () => {
     const activeProject = localStorage.getItem('activeProject');
@@ -81,6 +83,8 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
   };
  
   const onTimerStart = async () => {
+    setSuccessMessage(null);
+    setErrorMessage(null);
     const date = new Date();
     let summary = null;
     var result = await invoke('getIssueData', { 'issueKey': issueKey });
@@ -108,12 +112,15 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
   };
 
   const onTimerStop = async () => {
+    setSuccessMessage('Time Entry has been created');
     setActiveTimer(null);
     setLocalActiveTimer(null);
     localStorage.removeItem('timeEntry');
   };
 
   const onDiscarded = async () => {
+    setSuccessMessage(null);
+    setErrorMessage(null);
     localStorage.removeItem('timeEntry');
     setLocalActiveTimer(null);
     setActiveTimer(null);
@@ -144,7 +151,7 @@ const Scaffold = ({ resetApiKey, _activeTimer }) => {
                 <Box xcss={newContainer}> <Tab> <Inline alignInline='center'> Manual </Inline> </Tab></Box>
               </TabList>
               <TabPanel>
-                {isTimerActive ? <ActiveTimer issueKey={issueKey} activeTimer={activeTimer} fetchActiveProject={fetchActiveProject} onTimerStop={onTimerStop} onDiscarded={onDiscarded} activeProject={activeProject} /> : <StartTimer onTimerStart={onTimerStart} />}
+                {isTimerActive ? <ActiveTimer issueKey={issueKey} activeTimer={activeTimer} fetchActiveProject={fetchActiveProject} onTimerStop={onTimerStop} onDiscarded={onDiscarded} activeProject={activeProject} /> : <StartTimer onTimerStart={onTimerStart} successMessage={successMessage} errorMessage={errorMessage} />}
               </TabPanel>
               <TabPanel>
                 <ManualTimer issueKey={issueKey} activeProject={activeProject} key={`manual-timer-${Date.now()}`} fetchActiveProject={fetchActiveProject} />
