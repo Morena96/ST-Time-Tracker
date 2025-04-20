@@ -59,26 +59,40 @@ export const formatDateToHHMM = (date) => {
     }
 };
 
-export const parseTime = (timeString, date) => {
-    const parts = String(timeString).split(':');
-    var hours = parts.length === 1 ? Number(parts[0]) : Number(parts[0]);
-    var minutes = parts.length === 1 ? 0 : Number(parts[1]);
-    var newDate = new Date(date);
 
+
+export const parseTime = (timeString, date) => {
+    // Remove all colons and convert to string
+    const cleanTime = String(timeString).replace(/:/g, '');
+    let hours = 0;
+    let minutes = 0;
+    const newDate = new Date(date);
+
+    // Handle different length cases
+    if (cleanTime.length === 1) {
+        hours = Number(cleanTime);
+    } else if (cleanTime.length === 2) {
+        minutes = Number(cleanTime);
+    } else if (cleanTime.length >= 3) {
+        // For length 3 or 4, take last two digits as minutes
+        minutes = Number(cleanTime.slice(-2));
+        // Remaining digits as hours
+        hours = Number(cleanTime.slice(0, -2));
+    }
+
+    // Handle overflow cases
     if (minutes > 59) {
-        hours++;
+        hours += Math.floor(minutes / 60);
         minutes = minutes % 60;
     }
     if (hours > 23) {
         newDate.setHours(23);
         newDate.setMinutes(59);
-    }
-    else {
+    } else {
         newDate.setHours(hours);
         newDate.setMinutes(minutes);
     }
     return newDate;
-
 };
 
 /**
