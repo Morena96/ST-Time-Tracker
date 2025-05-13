@@ -223,26 +223,27 @@ const ManualTimer = ({ issueKey, activeProject, fetchActiveProject }) => {
       var st = new Date(timeEntryJson.start_date);
       var seconds = Math.floor((timeEntryJson.end_date - st) / 1000);
       var minutes = Math.max(1, Math.ceil(seconds/60));
-      var bodyData = `{
-        "comment": {
-          "content": [
+      var bodyData = JSON.stringify({
+        comment: {
+          content: [
             {
-              "content": [
+              content: [
                 {
-                  "text": "${description}",
-                  "type": "text"
+                  text: description,
+                  type: "text"
                 }
               ],
-              "type": "paragraph"
+              type: "paragraph"
             }
           ],
-          "type": "doc",
-          "version": 1
+          type: "doc",
+          version: 1
         },
-        "timeSpent": "${minutes}m",
-        "started": "${formatDateToISO(st)}"
-      }`;
+        timeSpent: `${minutes}m`,
+        started: formatDateToISO(st)
+      });
 
+      console.log('bodyData', bodyData);
       await invoke('createIssueWorkLog', { 'bodyData': bodyData, 'issueKey': issueKey });
 
 

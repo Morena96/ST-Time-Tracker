@@ -105,25 +105,25 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
       var startDate = new Date(activeTimer.start_date);
       var seconds = Math.floor((endDate - startDate) / 1000);
       var minutes = Math.max(1, Math.ceil(seconds/60));
-      var bodyData = `{
-        "comment": {
-          "content": [
+      var bodyData = JSON.stringify({
+        comment: {
+          content: [
             {
-              "content": [
+              content: [
                 {
-                  "text": "${description}",
-                  "type": "text"
+                  text: description,
+                  type: "text"
                 }
               ],
-              "type": "paragraph"
+              type: "paragraph"
             }
           ],
-          "type": "doc",
-          "version": 1
+          type: "doc",
+          version: 1
         },
-        "timeSpent": "${minutes}m",
-        "started": "${formatDateToISO(startDate)}"
-      }`;
+        timeSpent: `${minutes}m`,
+        started: formatDateToISO(startDate)
+      });
 
       await invoke('createIssueWorkLog', { 'bodyData': bodyData, 'issueKey': issueKey });
 
