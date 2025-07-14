@@ -22,10 +22,25 @@ const App = () => {
         }
       }
     } else {
-      localStorage.removeItem('apiKey');
-      console.log('error', result.error);
+      // Only remove API key for authentication errors, not all errors
+      const errorString = typeof result.error === 'string' ? result.error.toLowerCase() : '';
+      const isAuthError = errorString.includes('unauthorized') || 
+                         errorString.includes('forbidden') || 
+                         errorString.includes('invalid token') ||
+                         errorString.includes('authentication') ||
+                         errorString.includes('invalid key') ||
+                         (typeof result.error === 'object' && result.error?.status === 401);
+      
+      if (isAuthError) {
+        setIsLoggedIn(false);
+        console.log('Authentication error - removing API key:', result.error);
+        localStorage.removeItem('apiKey');
+      } else {
+        console.log('Non-auth error - keeping API key:', result.error);
+        // Don't remove API key for network errors, server errors, etc.
+      }
     }
-    setIsLoggedIn(result.success);
+
     return result.success;
   };
 
