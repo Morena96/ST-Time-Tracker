@@ -26,31 +26,41 @@ resolver.define('getRemoteActiveTimer', async ({ payload }) => {
   const time_zone = getTimezoneOffsetInHours();
   const url = `${baseUrl}/user_time_entries?page=1&limit=25&order_by=time&sort_to=desc&time_zone=${time_zone}`;
 
-  const result = await fetch(url, {
-    method: 'GET',
-    headers: {
-      "HTTP-USER-TOKEN": apiKey,
-      'Content-Type': 'application/json; charset=UTF-8',
+  try {
+    const result = await fetch(url, {
+      method: 'GET',
+      headers: {
+        "HTTP-USER-TOKEN": apiKey,
+        'Content-Type': 'application/json; charset=UTF-8',
+      }
+    });
+
+    var error = null;
+
+    if (!result.ok) {
+      const errorText = await result.text();
+      try {
+        const errorJson = JSON.parse(errorText);
+        error = errorJson.errors;
+      } catch {
+        error = errorText;
+      }
     }
-  });
-
-  var error = null;
-
-  if (!result.ok) {
-    const errorText = await result.text();
-    try {
-      const errorJson = JSON.parse(errorText);
-      error = errorJson.errors;
-    } catch {
-      error = errorText;
+    console.log('result', result);
+    if (result.ok) {
+      const activeTimer = await result.json();
+      return { success: result.ok, activeTimer: activeTimer };
+    } else {
+      return { success: result.ok, error: error, statusCode: result.status };
     }
-  }
-
-  if (result.ok) {
-    const activeTimer = await result.json();
-    return { success: result.ok, activeTimer: activeTimer };
-  } else {
-    return { success: result.ok, error: error };
+  } catch (fetchError) {
+    // Handle network errors or other fetch failures
+    console.log('Network error:', fetchError);
+    return { 
+      success: false, 
+      error: fetchError.message || 'Network error occurred', 
+      statusCode: null 
+    };
   }
 });
 
