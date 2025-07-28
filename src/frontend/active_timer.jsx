@@ -104,7 +104,7 @@ const ActiveTimer = ({ issueKey, activeTimer, onTimerStop, onDiscarded, activePr
     if (result.success) {
       var startDate = new Date(activeTimer.start_date);
       var seconds = Math.floor((endDate - startDate) / 1000);
-      var minutes = Math.max(1, Math.ceil(seconds/60));
+      var minutes = Math.round(seconds/60);
       var bodyData = JSON.stringify({
         comment: {
           content: [

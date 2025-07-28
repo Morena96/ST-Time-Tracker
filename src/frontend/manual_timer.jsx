@@ -222,7 +222,7 @@ const ManualTimer = ({ issueKey, activeProject, fetchActiveProject }) => {
 
       var st = new Date(timeEntryJson.start_date);
       var seconds = Math.floor((timeEntryJson.end_date - st) / 1000);
-      var minutes = Math.max(1, Math.ceil(seconds/60));
+      var minutes = Math.round(seconds/60);
       var bodyData = JSON.stringify({
         comment: {
           content: [
